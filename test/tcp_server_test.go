@@ -1,8 +1,8 @@
 package test
 
 import (
-	"engine/core/conf"
-	"engine/core/network"
+	"github.com/LeeroyLin/goengine/core/conf"
+	"github.com/LeeroyLin/goengine/core/network"
 	"testing"
 	"time"
 )

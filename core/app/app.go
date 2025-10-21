@@ -1,12 +1,12 @@
 package app
 
 import (
-	"engine/core/elog"
-	"engine/core/module"
-	"engine/def"
-	"engine/iface"
 	"errors"
 	"fmt"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/module"
+	"github.com/LeeroyLin/goengine/def"
+	"github.com/LeeroyLin/goengine/iface"
 	"sync"
 )
 

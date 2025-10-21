@@ -1,9 +1,9 @@
 package ws
 
 import (
-	"engine/core/elog"
-	"engine/iface/inetwork"
-	"engine/iface/iwebsocket"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/iface/inetwork"
+	"github.com/LeeroyLin/goengine/iface/iwebsocket"
 	"github.com/gorilla/websocket"
 	"sync"
 )

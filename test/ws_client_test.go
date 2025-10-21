@@ -1,8 +1,8 @@
 package test
 
 import (
-	"engine/core/elog"
-	"engine/core/network"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/network"
 	"github.com/gorilla/websocket"
 	"io"
 	"log"

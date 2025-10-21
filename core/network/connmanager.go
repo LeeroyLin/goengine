@@ -1,9 +1,9 @@
 package network
 
 import (
-	"engine/iface/inetwork"
 	"errors"
 	"fmt"
+	"github.com/LeeroyLin/goengine/iface/inetwork"
 	"strconv"
 	"sync"
 )

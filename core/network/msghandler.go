@@ -1,8 +1,8 @@
 package network
 
 import (
-	"engine/core/elog"
-	"engine/iface/inetwork"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/iface/inetwork"
 	"strconv"
 )
 

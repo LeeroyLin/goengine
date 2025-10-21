@@ -1,6 +1,6 @@
 package iface
 
-import "engine/def"
+import "github.com/LeeroyLin/goengine/def"
 
 type IDispatcher interface {
 	// Call 同步调用模块

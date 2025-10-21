@@ -2,8 +2,8 @@ package db
 
 import (
 	"context"
-	"engine/core/elog"
-	"engine/iface/idb"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/iface/idb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"

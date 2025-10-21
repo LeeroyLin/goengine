@@ -1,11 +1,11 @@
 package ws
 
 import (
-	"engine/core/conf"
-	"engine/core/elog"
-	"engine/iface/inetwork"
-	"engine/iface/iwebsocket"
 	"fmt"
+	"github.com/LeeroyLin/goengine/core/conf"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/iface/inetwork"
+	"github.com/LeeroyLin/goengine/iface/iwebsocket"
 	"github.com/gorilla/websocket"
 	"net/http"
 )

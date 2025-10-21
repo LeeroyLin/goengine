@@ -1,9 +1,9 @@
 package ws
 
 import (
-	"engine/iface/iwebsocket"
 	"errors"
 	"fmt"
+	"github.com/LeeroyLin/goengine/iface/iwebsocket"
 	"strconv"
 	"sync"
 )

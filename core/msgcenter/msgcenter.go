@@ -1,10 +1,10 @@
 package msgcenter
 
 import (
-	"engine/core/elog"
-	"engine/def"
 	"errors"
 	"fmt"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/def"
 	"sync"
 )
 

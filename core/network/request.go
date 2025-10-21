@@ -1,7 +1,7 @@
 package network
 
 import (
-	"engine/iface/inetwork"
+	"github.com/LeeroyLin/goengine/iface/inetwork"
 )
 
 type Request struct {

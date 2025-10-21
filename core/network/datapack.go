@@ -3,8 +3,8 @@ package network
 import (
 	"bytes"
 	"encoding/binary"
-	"engine/iface/inetwork"
 	"errors"
+	"github.com/LeeroyLin/goengine/iface/inetwork"
 )
 
 type DataPack struct {

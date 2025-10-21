@@ -1,8 +1,8 @@
 package module
 
 import (
-	"engine/core/elog"
-	"engine/iface"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/iface"
 	"sync"
 )
 

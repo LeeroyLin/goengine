@@ -1,7 +1,7 @@
 package pool
 
 import (
-	"engine/core/elog"
+	"github.com/LeeroyLin/goengine/core/elog"
 	"strconv"
 	"strings"
 )

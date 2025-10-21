@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"engine/core/elog"
+	"github.com/LeeroyLin/goengine/core/elog"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

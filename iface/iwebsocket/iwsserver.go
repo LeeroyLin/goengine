@@ -1,6 +1,6 @@
 package iwebsocket
 
-import iface "engine/iface/inetwork"
+import iface "github.com/LeeroyLin/goengine/iface/inetwork"
 
 type IWSServer interface {
 	Start()

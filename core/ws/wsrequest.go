@@ -1,8 +1,8 @@
 package ws
 
 import (
-	"engine/iface/inetwork"
-	"engine/iface/iwebsocket"
+	"github.com/LeeroyLin/goengine/iface/inetwork"
+	"github.com/LeeroyLin/goengine/iface/iwebsocket"
 )
 
 type WSRequest struct {

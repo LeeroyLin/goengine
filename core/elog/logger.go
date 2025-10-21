@@ -2,8 +2,8 @@ package elog
 
 import (
 	"bytes"
-	"engine/core/utils"
 	"fmt"
+	"github.com/LeeroyLin/goengine/core/utils"
 	"io"
 	"os"
 	"path/filepath"

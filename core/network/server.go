@@ -1,11 +1,11 @@
 package network
 
 import (
-	"engine/core/conf"
-	"engine/core/elog"
-	"engine/iface/inetwork"
 	"errors"
 	"fmt"
+	"github.com/LeeroyLin/goengine/core/conf"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/iface/inetwork"
 	"net"
 )
 

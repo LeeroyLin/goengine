@@ -1,6 +1,6 @@
 package iface
 
-import "engine/def"
+import "github.com/LeeroyLin/goengine/def"
 
 type IMsgCenter interface {
 	// AddHandler 添加消息处理函数

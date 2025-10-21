@@ -1,11 +1,11 @@
 package test
 
 import (
-	"engine/core/conf"
-	"engine/core/elog"
-	"engine/core/network"
-	"engine/core/ws"
-	"engine/iface/iwebsocket"
+	"github.com/LeeroyLin/goengine/core/conf"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/network"
+	"github.com/LeeroyLin/goengine/core/ws"
+	"github.com/LeeroyLin/goengine/iface/iwebsocket"
 	"testing"
 	"time"
 )

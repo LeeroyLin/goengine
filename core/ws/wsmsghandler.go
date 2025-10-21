@@ -1,8 +1,8 @@
 package ws
 
 import (
-	"engine/core/elog"
-	"engine/iface/iwebsocket"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/iface/iwebsocket"
 	"strconv"
 )
 

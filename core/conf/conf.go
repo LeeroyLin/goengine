@@ -3,10 +3,10 @@ package conf
 import (
 	"bytes"
 	"encoding/json"
-	"engine/core/elog"
-	"engine/core/utils"
-	"engine/iface"
 	"fmt"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/utils"
+	"github.com/LeeroyLin/goengine/iface"
 	"os"
 	"reflect"
 	"strings"

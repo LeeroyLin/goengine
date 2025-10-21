@@ -1,12 +1,12 @@
 package test
 
 import (
-	"engine/core/app"
-	"engine/core/conf"
-	"engine/core/elog"
-	"engine/core/module"
-	"engine/def"
-	"engine/iface"
+	"github.com/LeeroyLin/goengine/core/app"
+	"github.com/LeeroyLin/goengine/core/conf"
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/module"
+	"github.com/LeeroyLin/goengine/def"
+	"github.com/LeeroyLin/goengine/iface"
 	"testing"
 	"time"
 )

@@ -1,9 +1,9 @@
 package module
 
 import (
-	"engine/core/msgcenter"
-	"engine/def"
-	"engine/iface"
+	"github.com/LeeroyLin/goengine/core/msgcenter"
+	"github.com/LeeroyLin/goengine/def"
+	"github.com/LeeroyLin/goengine/iface"
 )
 
 type Module struct {
