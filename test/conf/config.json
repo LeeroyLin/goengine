@@ -1,0 +1,15 @@
+{
+  "Name": "TestServer",
+  "Desc": "ServerDesc",
+  "IPVersion": "tcp4",
+  "IP": "0.0.0.0",
+  "Port": 8999,
+  "MaxConn": 10000,
+  "LogDir": "",
+  "LogFile": "",
+  "LogDebug": false,
+  "WorkerPoolSize": 100,
+  "MaxWorkerTaskLen": 10000,
+  "MaxPacketSize": 1048576,
+  "MaxMsgBuffChanLen": 1024
+}
