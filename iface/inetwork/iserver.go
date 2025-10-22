@@ -12,4 +12,6 @@ type IServer interface {
 	GetConnMgr() IConnManager
 	// GetDataPack 获得封包解包对象
 	GetDataPack() IDataPack
+	// RecycleId 回收连接id
+	RecycleId(connId uint32)
 }

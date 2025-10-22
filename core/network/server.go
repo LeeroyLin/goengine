@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/LeeroyLin/goengine/core/conf"
 	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/pool"
 	"github.com/LeeroyLin/goengine/iface/inetwork"
 	"net"
 )
@@ -18,6 +19,7 @@ type Server struct {
 	connMgr    inetwork.IConnManager
 	dataPack   inetwork.IDataPack
 	exitChan   chan interface{}
+	idPool     *pool.IdPool[uint32]
 }
 
 func (s *Server) Start() {
@@ -44,9 +46,7 @@ func (s *Server) Start() {
 		// 开启工作池
 		s.msgHandler.StartWorkerPool()
 
-		// todo
-		var cid uint32
-		cid = 0
+		cid := s.idPool.Get()
 
 		go func() {
 			for {
@@ -129,6 +129,10 @@ func (s *Server) GetDataPack() inetwork.IDataPack {
 	return s.dataPack
 }
 
+func (s *Server) RecycleId(connId uint32) {
+	s.idPool.Set(connId)
+}
+
 func NewServer(conf *conf.Conf, dataPack inetwork.IDataPack) inetwork.IServer {
 	s := &Server{
 		IPVersion:  conf.IPVersion,
@@ -139,6 +143,7 @@ func NewServer(conf *conf.Conf, dataPack inetwork.IDataPack) inetwork.IServer {
 		connMgr:    NewConnManager(),
 		dataPack:   dataPack,
 		exitChan:   make(chan interface{}),
+		idPool:     pool.NewUint32IdPool(uint32(conf.MaxConn)),
 	}
 
 	return s

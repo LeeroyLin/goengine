@@ -298,6 +298,8 @@ func (c *WSConnection) finalizer() {
 	// 从连接管理中移除该连接
 	c.Server.GetConnMgr().RemoveConn(c)
 
+	c.Server.RecycleId(c.connID)
+
 	elog.Info("[Conn] connection stoped.", c.connID)
 
 	if c.msgBuffChan == nil {

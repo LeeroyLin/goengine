@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/LeeroyLin/goengine/core/conf"
 	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/pool"
 	"github.com/LeeroyLin/goengine/iface/inetwork"
 	"github.com/LeeroyLin/goengine/iface/iwebsocket"
 	"github.com/gorilla/websocket"
@@ -21,7 +22,7 @@ type WSServer struct {
 	dataPack   inetwork.IDataPack
 	exitChan   chan interface{}
 	upgrader   websocket.Upgrader
-	cid        uint32
+	idPool     *pool.IdPool[uint32]
 }
 
 func (s *WSServer) Start() {
@@ -89,6 +90,10 @@ func (s *WSServer) GetDataPack() inetwork.IDataPack {
 	return s.dataPack
 }
 
+func (s *WSServer) RecycleId(connId uint32) {
+	s.idPool.Set(connId)
+}
+
 func NewWSServer(conf *conf.Conf, dataPack inetwork.IDataPack) *WSServer {
 	s := &WSServer{
 		IPVersion:  conf.IPVersion,
@@ -100,7 +105,7 @@ func NewWSServer(conf *conf.Conf, dataPack inetwork.IDataPack) *WSServer {
 		connMgr:    NewWSConnManager(),
 		dataPack:   dataPack,
 		exitChan:   make(chan interface{}),
-		cid:        0,
+		idPool:     pool.NewUint32IdPool(uint32(conf.MaxConn)),
 	}
 
 	return s
@@ -120,10 +125,9 @@ func (s *WSServer) serveWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dealConn := NewWSConnection(s.conf.WorkerPoolSize, s.conf.MaxMsgBuffChanLen, s, conn, s.cid, s.msgHandler)
+	connId := s.idPool.Get()
 
-	// todo 临时用递增id测试
-	s.cid++
+	dealConn := NewWSConnection(s.conf.WorkerPoolSize, s.conf.MaxMsgBuffChanLen, s, conn, connId, s.msgHandler)
 
 	dealConn.Start()
 }

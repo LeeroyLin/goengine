@@ -14,4 +14,6 @@ type IWSServer interface {
 	GetConnMgr() IWSConnManager
 	// GetDataPack 获得封包解包对象
 	GetDataPack() iface.IDataPack
+	// RecycleId 回收连接id
+	RecycleId(connId uint32)
 }
