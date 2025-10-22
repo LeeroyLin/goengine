@@ -86,3 +86,6 @@ func (s *WSClient) GetConnMgr() iwebsocket.IWSConnManager {
 func (s *WSClient) GetDataPack() inetwork.IDataPack {
 	return s.dataPack
 }
+
+func (s *WSClient) RecycleId(connId uint32) {
+}
