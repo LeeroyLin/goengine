@@ -13,13 +13,27 @@ type DBDropIndexOp struct {
 	Key  interface{}
 }
 
-func NewDBDropIndexOp(fromModule, dbName, collName string) *DBDropIndexOp {
+func NewDBDropIndexOp(fromModule, dbName, collName string, name string) *DBDropIndexOp {
 	op := &DBDropIndexOp{
 		DBOpBase: DBOpBase{
 			FromModule: fromModule,
 			DBName:     dbName,
 			CollName:   collName,
 		},
+		Name: name,
+	}
+
+	return op
+}
+
+func NewDBDropIndexOpWithKey(fromModule, dbName, collName string, key interface{}) *DBDropIndexOp {
+	op := &DBDropIndexOp{
+		DBOpBase: DBOpBase{
+			FromModule: fromModule,
+			DBName:     dbName,
+			CollName:   collName,
+		},
+		Key: key,
 	}
 
 	return op

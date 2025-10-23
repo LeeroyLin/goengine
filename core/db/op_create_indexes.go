@@ -12,13 +12,14 @@ type DBBulkCreateIndexOp struct {
 	idxModels []mongo.IndexModel
 }
 
-func NewDBBulkCreateIndexOp(fromModule, dbName, collName string) *DBBulkCreateIndexOp {
+func NewDBBulkCreateIndexOp(fromModule, dbName, collName string, idxModels []mongo.IndexModel) *DBBulkCreateIndexOp {
 	op := &DBBulkCreateIndexOp{
 		DBOpBase: DBOpBase{
 			FromModule: fromModule,
 			DBName:     dbName,
 			CollName:   collName,
 		},
+		idxModels: idxModels,
 	}
 
 	return op
