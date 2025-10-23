@@ -155,7 +155,7 @@ func (s *HttpServer) runAsHttps() {
 func (s *HttpServer) runAsHttp() {
 	// 打印服务器启动信息
 	elog.Info("Start http...", s.addr)
-	elog.Infof("Listen http://", s.addr)
+	elog.Info("Listen http://", s.addr)
 
 	// 启动HTTP服务器
 	err := s.Server.ListenAndServe()
