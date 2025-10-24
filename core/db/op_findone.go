@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"github.com/LeeroyLin/goengine/core/elog"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -35,14 +34,12 @@ func (op DBFindOneOp) Exec(c *mongo.Collection) (interface{}, error) {
 
 	err := res.Err()
 	if err != nil {
-		elog.Error("[MongoDB] find one err.", op.DBName, op.CollName, err)
 		return nil, err
 	}
 
 	obj := op.ObjCreator()
 	err = res.Decode(obj)
 	if err != nil {
-		elog.Error("[MongoDB] find one decode err.", op.DBName, op.CollName, err)
 		return nil, err
 	}
 

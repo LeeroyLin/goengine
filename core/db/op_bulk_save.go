@@ -45,14 +45,12 @@ func (op DBBulkSaveOp) Exec(c *mongo.Collection) (interface{}, error) {
 	vm, err := bsonrw.NewBSONValueWriter(buf)
 
 	if err != nil {
-		elog.Error("[MongoDB] bulk save NewBSONValueWriter err.", op.DBName, op.CollName, err)
 		return nil, err
 	}
 
 	enc, err := bson.NewEncoder(vm)
 
 	if err != nil {
-		elog.Error("[MongoDB] bulk save NewEncoder err.", op.DBName, op.CollName, err)
 		return nil, err
 	}
 

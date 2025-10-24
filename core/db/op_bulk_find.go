@@ -51,7 +51,6 @@ func (op DBBulkFindOp) Exec(c *mongo.Collection) (interface{}, error) {
 	defer cancel()
 
 	if err != nil {
-		elog.Error("[MongoDB] find err.", op.DBName, op.CollName, err)
 		return nil, err
 	}
 
@@ -66,19 +65,16 @@ func (op DBBulkFindOp) Exec(c *mongo.Collection) (interface{}, error) {
 
 	for cursor.Next(ctx) {
 		if err = ctx.Err(); err != nil {
-			elog.Error("[MongoDB] bulk find get next err", op.DBName, op.CollName, err)
 			return nil, err
 		}
 
 		if err = cursor.Err(); err != nil {
-			elog.Error("[MongoDB] bulk find cursor err", op.DBName, op.CollName, err)
 			return nil, err
 		}
 
 		obj := op.ObjCreator()
 		err = cursor.Decode(obj)
 		if err != nil {
-			elog.Error("[MongoDB] bulk find decode err.", op.DBName, op.CollName, err)
 			return nil, err
 		}
 		objs = append(objs, obj)

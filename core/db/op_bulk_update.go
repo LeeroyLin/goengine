@@ -45,14 +45,12 @@ func (op DBBulkUpdateOp) Exec(c *mongo.Collection) (interface{}, error) {
 	vm, err := bsonrw.NewBSONValueWriter(buf)
 
 	if err != nil {
-		elog.Error("[MongoDB] bulk update NewBSONValueWriter err.", op.DBName, op.CollName, err)
 		return nil, err
 	}
 
 	enc, err := bson.NewEncoder(vm)
 
 	if err != nil {
-		elog.Error("[MongoDB] bulk update NewEncoder err.", op.DBName, op.CollName, err)
 		return nil, err
 	}
 
@@ -90,7 +88,6 @@ func (op DBBulkUpdateOp) Exec(c *mongo.Collection) (interface{}, error) {
 		elog.Debug("[MongoDB] bulk update split.", op.DBName, op.CollName, startIdx, endIdx)
 
 		if err != nil {
-			elog.Error("[MongoDB] bulk update err.", op.DBName, op.CollName, err)
 			return nil, err
 		}
 

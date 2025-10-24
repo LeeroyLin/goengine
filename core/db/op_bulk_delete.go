@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"github.com/LeeroyLin/goengine/core/elog"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -41,7 +40,6 @@ func (op DBBulkDeleteOp) Exec(c *mongo.Collection) (interface{}, error) {
 	cancel()
 
 	if err != nil {
-		elog.Error("[MongoDB] bulk delete err.", op.DBName, op.CollName, err)
 		return nil, err
 	}
 

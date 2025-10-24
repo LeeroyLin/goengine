@@ -33,7 +33,6 @@ func (op DBCreateIndexOp) Exec(c *mongo.Collection) (interface{}, error) {
 	cancel()
 
 	if err != nil {
-		elog.Error("[MongoDB] create index err.", op.DBName, op.CollName, err)
 		return nil, err
 	}
 

@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"github.com/LeeroyLin/goengine/core/elog"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -48,7 +47,6 @@ func (op DBDropIndexOp) Exec(c *mongo.Collection) (interface{}, error) {
 		cancel()
 
 		if err != nil {
-			elog.Error("[MongoDB] drop index with key err.", op.DBName, op.CollName, op.Key, err)
 			return nil, err
 		}
 
@@ -60,7 +58,6 @@ func (op DBDropIndexOp) Exec(c *mongo.Collection) (interface{}, error) {
 	cancel()
 
 	if err != nil {
-		elog.Error("[MongoDB] drop index with name err.", op.DBName, op.CollName, op.Name, err)
 		return nil, err
 	}
 
