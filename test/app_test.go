@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var Config = conf.NewConf()
+var Config = config.NewConf()
 
 type TestCommReq struct {
 	CommId uint32

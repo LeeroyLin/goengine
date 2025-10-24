@@ -22,7 +22,7 @@ func onMsg1(req iwebsocket.IWSRequest) {
 }
 
 func TestWSServer(t *testing.T) {
-	c := conf.NewConf()
+	c := config.NewConf()
 	c.LoadFromFile("")
 	s := ws.NewWSServer(c, network.NewDataPack(c.MaxPacketSize))
 

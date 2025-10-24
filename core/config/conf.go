@@ -1,4 +1,4 @@
-package conf
+package config
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-type Conf struct {
+type ConfBase struct {
 	Name      string // 名字
 	Desc      string // 额外描述
 	IPVersion string // 主机ip版本：tcp,tcp4,tcp6
@@ -31,19 +31,8 @@ type Conf struct {
 	MaxMsgBuffChanLen uint32 // 最大消息队列通道容量
 }
 
-func NewConf() *Conf {
-	c := &Conf{
-		Name: "UnknownServer",
-		Desc: "NoDesc",
-		IP:   "0.0.0.0",
-		Port: 8999,
-	}
-
-	return c
-}
-
 // Setup 装载配置
-func (c *Conf) Setup(confFilePath string, flags iface.IFlags) {
+func (c *ConfBase) Setup(confFilePath string, flags iface.IFlags) {
 	// 加载配置文件
 	c.LoadFromFile(confFilePath)
 
@@ -75,7 +64,7 @@ func (c *Conf) Setup(confFilePath string, flags iface.IFlags) {
 }
 
 // LoadFromFile 从文件加载配置
-func (c *Conf) LoadFromFile(confFilePath string) {
+func (c *ConfBase) LoadFromFile(confFilePath string) {
 	pwd, err := os.Getwd()
 	if err != nil {
 		pwd = "."
@@ -106,7 +95,7 @@ func (c *Conf) LoadFromFile(confFilePath string) {
 	}
 }
 
-func (c *Conf) InitFlags(flags iface.IFlags) {
+func (c *ConfBase) InitFlags(flags iface.IFlags) {
 	// 获取反射值对象
 	val := reflect.ValueOf(c)
 
@@ -145,7 +134,7 @@ func (c *Conf) InitFlags(flags iface.IFlags) {
 	flags.SetString("test.timeout", "", "test")
 }
 
-func (c *Conf) ParseFlags(flags iface.IFlags) {
+func (c *ConfBase) ParseFlags(flags iface.IFlags) {
 	// 获取反射值对象
 	val := reflect.ValueOf(c)
 
@@ -188,7 +177,7 @@ func (c *Conf) ParseFlags(flags iface.IFlags) {
 	}
 }
 
-func (c *Conf) GetLogStr() string {
+func (c *ConfBase) GetLogStr() string {
 	var buf bytes.Buffer
 
 	// 获取反射值对象

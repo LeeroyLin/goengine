@@ -8,7 +8,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	c := conf.NewConf()
+	c := config.NewConf()
 	c.LoadFromFile("")
 	s := network.NewServer(c, network.NewDataPack(c.MaxPacketSize))
 

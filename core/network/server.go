@@ -14,7 +14,7 @@ type Server struct {
 	IPVersion  string
 	IP         string
 	Port       int
-	conf       *conf.Conf
+	conf       *config.Conf
 	msgHandler inetwork.IMsgHandler
 	connMgr    inetwork.IConnManager
 	dataPack   inetwork.IDataPack
@@ -133,7 +133,7 @@ func (s *Server) RecycleId(connId uint32) {
 	s.idPool.Set(connId)
 }
 
-func NewServer(conf *conf.Conf, dataPack inetwork.IDataPack) inetwork.IServer {
+func NewServer(conf *config.Conf, dataPack inetwork.IDataPack) inetwork.IServer {
 	s := &Server{
 		IPVersion:  conf.IPVersion,
 		IP:         conf.IP,

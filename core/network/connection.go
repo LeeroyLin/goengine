@@ -283,7 +283,7 @@ func (c *Connection) finalizer() {
 }
 
 // NewConnection 创建连接的方法
-func NewConnection(conf *conf.Conf, server inetwork.IServer, conn *net.TCPConn, connID uint32, msgHandler inetwork.IMsgHandler) inetwork.IConnection {
+func NewConnection(conf *config.Conf, server inetwork.IServer, conn *net.TCPConn, connID uint32, msgHandler inetwork.IMsgHandler) inetwork.IConnection {
 	c := &Connection{
 		Server:            server,
 		conn:              conn,
