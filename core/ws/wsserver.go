@@ -2,7 +2,7 @@ package ws
 
 import (
 	"fmt"
-	"github.com/LeeroyLin/goengine/core/conf"
+	"github.com/LeeroyLin/goengine/core/config"
 	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/LeeroyLin/goengine/core/pool"
 	"github.com/LeeroyLin/goengine/iface/inetwork"
@@ -16,7 +16,7 @@ type WSServer struct {
 	IP         string
 	Port       int
 	Url        string
-	conf       *config.Conf
+	conf       *config.ConfBase
 	msgHandler iwebsocket.IWSMsgHandler
 	connMgr    iwebsocket.IWSConnManager
 	dataPack   inetwork.IDataPack
@@ -94,7 +94,7 @@ func (s *WSServer) RecycleId(connId uint32) {
 	s.idPool.Set(connId)
 }
 
-func NewWSServer(conf *config.Conf, dataPack inetwork.IDataPack) *WSServer {
+func NewWSServer(conf *config.ConfBase, dataPack inetwork.IDataPack) *WSServer {
 	s := &WSServer{
 		IPVersion:  conf.IPVersion,
 		IP:         conf.IP,

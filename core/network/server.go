@@ -3,7 +3,7 @@ package network
 import (
 	"errors"
 	"fmt"
-	"github.com/LeeroyLin/goengine/core/conf"
+	"github.com/LeeroyLin/goengine/core/config"
 	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/LeeroyLin/goengine/core/pool"
 	"github.com/LeeroyLin/goengine/iface/inetwork"
@@ -14,7 +14,7 @@ type Server struct {
 	IPVersion  string
 	IP         string
 	Port       int
-	conf       *config.Conf
+	conf       *config.ConfBase
 	msgHandler inetwork.IMsgHandler
 	connMgr    inetwork.IConnManager
 	dataPack   inetwork.IDataPack
@@ -133,7 +133,7 @@ func (s *Server) RecycleId(connId uint32) {
 	s.idPool.Set(connId)
 }
 
-func NewServer(conf *config.Conf, dataPack inetwork.IDataPack) inetwork.IServer {
+func NewServer(conf *config.ConfBase, dataPack inetwork.IDataPack) inetwork.IServer {
 	s := &Server{
 		IPVersion:  conf.IPVersion,
 		IP:         conf.IP,

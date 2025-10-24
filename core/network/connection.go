@@ -2,7 +2,7 @@ package network
 
 import (
 	"errors"
-	"github.com/LeeroyLin/goengine/core/conf"
+	"github.com/LeeroyLin/goengine/core/config"
 	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/LeeroyLin/goengine/iface/inetwork"
 	"io"
@@ -283,7 +283,7 @@ func (c *Connection) finalizer() {
 }
 
 // NewConnection 创建连接的方法
-func NewConnection(conf *config.Conf, server inetwork.IServer, conn *net.TCPConn, connID uint32, msgHandler inetwork.IMsgHandler) inetwork.IConnection {
+func NewConnection(conf *config.ConfBase, server inetwork.IServer, conn *net.TCPConn, connID uint32, msgHandler inetwork.IMsgHandler) inetwork.IConnection {
 	c := &Connection{
 		Server:            server,
 		conn:              conn,
