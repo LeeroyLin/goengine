@@ -1,7 +1,6 @@
 package token
 
 import (
-	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/dgrijalva/jwt-go"
 	"time"
 )
@@ -27,7 +26,7 @@ func NewTokenMgr(signingKey string) *TokenMgr {
 // aud: 受众
 // expireAfter: 该时间之后过期
 // method: 使用的方法，例如：jwt.SigningMethodHS256
-func (m *TokenMgr) Gen(iss, sub, aud string, expireAfter time.Duration, method jwt.SigningMethod) string {
+func (m *TokenMgr) Gen(iss, sub, aud string, expireAfter time.Duration, method jwt.SigningMethod) (string, error) {
 	token := jwt.NewWithClaims(method, jwt.MapClaims{
 		"iss": iss,                                // 发行者
 		"sub": sub,                                // 主题
@@ -37,12 +36,7 @@ func (m *TokenMgr) Gen(iss, sub, aud string, expireAfter time.Duration, method j
 	})
 
 	// 生成签名的token
-	tokenStr, err := token.SignedString(m.signingKey)
-	if err != nil {
-		elog.Error("[Token] gen token err.", err)
-	}
-
-	return tokenStr
+	return token.SignedString(m.signingKey)
 }
 
 func (m *TokenMgr) Verify(tokenStr string) (bool, error) {
