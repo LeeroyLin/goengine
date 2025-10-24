@@ -121,7 +121,7 @@ func NewTestModule2() *TestModule2 {
 
 func TestApp(t *testing.T) {
 	// 装载配置
-	Config.Setup("")
+	Config.Setup(Config, "")
 
 	a := &TestApp1{
 		App: *app.NewApp(Config.Name, Config.Desc),

@@ -33,14 +33,14 @@ type ConfBase struct {
 }
 
 // Setup 装载配置
-func (c *ConfBase) Setup(confFilePath string) {
+func (c *ConfBase) Setup(child interface{}, confFilePath string) {
 	c.Flags = flags.NewFlags()
 
 	// 加载配置文件
-	c.LoadFromFile(confFilePath)
+	c.LoadFromFile(child, confFilePath)
 
 	// 初始化命令行参数
-	c.InitFlags()
+	c.initFlags(child)
 
 	// 读取命令行参数
 	cliArgs := os.Args[1:]
@@ -51,7 +51,7 @@ func (c *ConfBase) Setup(confFilePath string) {
 	}
 
 	// 处理命令行参数
-	c.ParseFlags()
+	c.parseFlags(child)
 
 	// 日志文件
 	if c.LogFile != "" {
@@ -67,7 +67,7 @@ func (c *ConfBase) Setup(confFilePath string) {
 }
 
 // LoadFromFile 从文件加载配置
-func (c *ConfBase) LoadFromFile(confFilePath string) {
+func (c *ConfBase) LoadFromFile(child interface{}, confFilePath string) {
 	pwd, err := os.Getwd()
 	if err != nil {
 		pwd = "."
@@ -92,15 +92,15 @@ func (c *ConfBase) LoadFromFile(confFilePath string) {
 	}
 
 	// 将json数据解析到struct中
-	err = json.Unmarshal(data, c)
+	err = json.Unmarshal(data, child)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (c *ConfBase) InitFlags() {
+func (c *ConfBase) initFlags(child interface{}) {
 	// 获取反射值对象
-	val := reflect.ValueOf(c)
+	val := reflect.ValueOf(child)
 
 	// 如果是指针类型，获取其指向的元素
 	if val.Kind() == reflect.Ptr {
@@ -137,9 +137,9 @@ func (c *ConfBase) InitFlags() {
 	c.Flags.SetString("test.timeout", "", "test")
 }
 
-func (c *ConfBase) ParseFlags() {
+func (c *ConfBase) parseFlags(child interface{}) {
 	// 获取反射值对象
-	val := reflect.ValueOf(c)
+	val := reflect.ValueOf(child)
 
 	// 如果是指针类型，获取其指向的元素
 	if val.Kind() == reflect.Ptr {
@@ -180,11 +180,11 @@ func (c *ConfBase) ParseFlags() {
 	}
 }
 
-func (c *ConfBase) GetLogStr() string {
+func (c *ConfBase) GetLogStr(child interface{}) string {
 	var buf bytes.Buffer
 
 	// 获取反射值对象
-	val := reflect.ValueOf(c)
+	val := reflect.ValueOf(child)
 
 	// 如果是指针类型，获取其指向的元素
 	if val.Kind() == reflect.Ptr {

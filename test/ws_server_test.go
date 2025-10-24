@@ -23,7 +23,7 @@ func onMsg1(req iwebsocket.IWSRequest) {
 
 func TestWSServer(t *testing.T) {
 	c := &config.ConfBase{}
-	c.LoadFromFile("")
+	c.Setup(c, "")
 	s := ws.NewWSServer(c, network.NewDataPack(c.MaxPacketSize))
 
 	s.AddRouter(1, onMsg1)

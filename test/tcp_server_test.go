@@ -9,7 +9,7 @@ import (
 
 func TestServer(t *testing.T) {
 	c := &config.ConfBase{}
-	c.LoadFromFile("")
+	c.Setup(c, "")
 	s := network.NewServer(c, network.NewDataPack(c.MaxPacketSize))
 
 	s.Start()
