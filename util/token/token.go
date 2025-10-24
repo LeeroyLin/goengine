@@ -1,6 +1,8 @@
 package token
 
 import (
+	"errors"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"time"
 )
@@ -41,7 +43,7 @@ func (m *TokenMgr) Gen(iss, sub, aud string, expireAfter time.Duration, method j
 
 func (m *TokenMgr) Verify(tokenStr string) (bool, error) {
 	// 解析token
-	_, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		// 这里我们验证签名的算法是否是我们所期望的算法，这里是HS256算法，并且验证密钥是否正确。
 		return m.signingKey, nil
 	})
@@ -49,12 +51,50 @@ func (m *TokenMgr) Verify(tokenStr string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	//
-	//if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-	//	println(claims["sub"]) // 输出主题（或其他claims）的信息
-	//} else {
-	//	panic(err) // 如果解析失败，打印错误信息
-	//}
+
+	if !token.Valid {
+		return false, errors.New(fmt.Sprintf("token not valid. token:'%s'", tokenStr))
+	}
 
 	return true, nil
+}
+
+func (m *TokenMgr) GetClaims(tokenStr string) (jwt.MapClaims, error) {
+	// 解析token
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		// 这里我们验证签名的算法是否是我们所期望的算法，这里是HS256算法，并且验证密钥是否正确。
+		return m.signingKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, errors.New(fmt.Sprintf("token not valid. token:'%s'", tokenStr))
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("get claims failed. token:'%s'", tokenStr))
+	}
+
+	return claims, nil
+}
+
+func (m *TokenMgr) GetExpireAt(tokenStr string) (int64, error) {
+	claims, err := m.GetClaims(tokenStr)
+
+	if err != nil {
+		return 0, err
+	}
+
+	exp, ok := claims["exp"]
+
+	if !ok {
+		return 0, errors.New(fmt.Sprintf("find exp from claims err.token:'%s'", tokenStr))
+	}
+
+	return int64(exp.(float64)), nil
 }
