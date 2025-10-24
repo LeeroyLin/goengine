@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+var buf bytes.Buffer
+
 type ConfBase struct {
 	Flags     *flags.Flags
 	Name      string // 名字
@@ -181,8 +183,18 @@ func (c *ConfBase) parseFlags(child interface{}) {
 }
 
 func (c *ConfBase) GetLogStr(child interface{}) string {
-	var buf bytes.Buffer
+	buf.Reset()
 
+	buf.WriteString("\n[Conf] ====================\n")
+
+	c.recordLogStr(child)
+
+	buf.WriteString("[Conf] ====================\n")
+
+	return buf.String()
+}
+
+func (c *ConfBase) recordLogStr(child interface{}) {
 	// 获取反射值对象
 	val := reflect.ValueOf(child)
 
@@ -194,18 +206,26 @@ func (c *ConfBase) GetLogStr(child interface{}) string {
 	// 获取结构体类型
 	typ := val.Type()
 
-	buf.WriteString("\n")
-
 	// 遍历结构体的所有字段
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Field(i)
-		fieldName := typ.Field(i).Name
+		fieldTyp := typ.Field(i)
+
+		if fieldTyp.Type.Kind() == reflect.Struct {
+			c.recordLogStr(field.Interface())
+			continue
+		}
+
+		fieldName := fieldTyp.Name
 		fieldValue := field.Interface()
 
+		if fieldName == "Flags" {
+			continue
+		}
+
+		buf.WriteString("    ")
 		buf.WriteString(fmt.Sprintf("%s:%v,\n", fieldName, fieldValue))
 	}
-
-	return buf.String()
 }
 
 func getCmdName(fieldName string) string {
