@@ -34,6 +34,8 @@ type ConfBase struct {
 
 // Setup 装载配置
 func (c *ConfBase) Setup(confFilePath string) {
+	c.Flags = flags.NewFlags()
+
 	// 加载配置文件
 	c.LoadFromFile(confFilePath)
 
