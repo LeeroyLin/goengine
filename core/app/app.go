@@ -14,7 +14,6 @@ import (
 type App struct {
 	Name              string
 	Desc              string
-	Flags             *Flags           // 参数
 	closeChan         chan interface{} // 用于关闭的通道
 	preModuleGroup    *module.ModuleGroup
 	middleModuleGroup *module.ModuleGroup
@@ -32,11 +31,10 @@ type App struct {
 }
 
 // NewApp 返回一个初始化的App
-func NewApp(name, desc string, flags *Flags) *App {
+func NewApp(name, desc string) *App {
 	a := &App{
 		Name:            name,
 		Desc:            desc,
-		Flags:           flags,
 		markStop:        false,
 		preparing:       false,
 		running:         false,

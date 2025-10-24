@@ -1,7 +1,7 @@
 package test
 
 import (
-	"github.com/LeeroyLin/goengine/core/conf"
+	"github.com/LeeroyLin/goengine/core/config"
 	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/LeeroyLin/goengine/core/network"
 	"github.com/LeeroyLin/goengine/core/ws"
@@ -22,7 +22,7 @@ func onMsg1(req iwebsocket.IWSRequest) {
 }
 
 func TestWSServer(t *testing.T) {
-	c := config.NewConf()
+	c := &config.ConfBase{}
 	c.LoadFromFile("")
 	s := ws.NewWSServer(c, network.NewDataPack(c.MaxPacketSize))
 

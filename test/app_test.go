@@ -2,7 +2,7 @@ package test
 
 import (
 	"github.com/LeeroyLin/goengine/core/app"
-	"github.com/LeeroyLin/goengine/core/conf"
+	"github.com/LeeroyLin/goengine/core/config"
 	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/LeeroyLin/goengine/core/module"
 	"github.com/LeeroyLin/goengine/def"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var Config = config.NewConf()
+var Config = &config.ConfBase{}
 
 type TestCommReq struct {
 	CommId uint32
@@ -120,13 +120,11 @@ func NewTestModule2() *TestModule2 {
 }
 
 func TestApp(t *testing.T) {
-	flags := app.NewFlags()
-
 	// 装载配置
-	Config.Setup("", flags)
+	Config.Setup("")
 
 	a := &TestApp1{
-		App: *app.NewApp(Config.Name, Config.Desc, flags),
+		App: *app.NewApp(Config.Name, Config.Desc),
 	}
 
 	a.Init([]iface.IModule{}, []iface.IModule{

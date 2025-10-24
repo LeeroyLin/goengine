@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/flags"
 	"github.com/LeeroyLin/goengine/core/utils"
-	"github.com/LeeroyLin/goengine/iface"
 	"os"
 	"reflect"
 	"strings"
 )
 
 type ConfBase struct {
+	Flags     *flags.Flags
 	Name      string // 名字
 	Desc      string // 额外描述
 	IPVersion string // 主机ip版本：tcp,tcp4,tcp6
@@ -32,23 +33,23 @@ type ConfBase struct {
 }
 
 // Setup 装载配置
-func (c *ConfBase) Setup(confFilePath string, flags iface.IFlags) {
+func (c *ConfBase) Setup(confFilePath string) {
 	// 加载配置文件
 	c.LoadFromFile(confFilePath)
 
 	// 初始化命令行参数
-	c.InitFlags(flags)
+	c.InitFlags()
 
 	// 读取命令行参数
 	cliArgs := os.Args[1:]
-	err := flags.Parse(cliArgs)
+	err := c.Flags.Parse(cliArgs)
 	if err != nil {
 		panic(err)
 		return
 	}
 
 	// 处理命令行参数
-	c.ParseFlags(flags)
+	c.ParseFlags()
 
 	// 日志文件
 	if c.LogFile != "" {
@@ -95,7 +96,7 @@ func (c *ConfBase) LoadFromFile(confFilePath string) {
 	}
 }
 
-func (c *ConfBase) InitFlags(flags iface.IFlags) {
+func (c *ConfBase) InitFlags() {
 	// 获取反射值对象
 	val := reflect.ValueOf(c)
 
@@ -118,23 +119,23 @@ func (c *ConfBase) InitFlags(flags iface.IFlags) {
 		kind := typeField.Type.Kind()
 
 		if kind == reflect.String {
-			flags.SetString(lowerName, fieldValue.(string), fieldName)
+			c.Flags.SetString(lowerName, fieldValue.(string), fieldName)
 		} else if kind == reflect.Bool {
-			flags.SetBool(lowerName, fieldValue.(bool), fieldName)
+			c.Flags.SetBool(lowerName, fieldValue.(bool), fieldName)
 		} else if kind == reflect.Int {
-			flags.SetInt(lowerName, fieldValue.(int), fieldName)
+			c.Flags.SetInt(lowerName, fieldValue.(int), fieldName)
 		} else if kind == reflect.Uint32 {
-			flags.SetUInt32(lowerName, fieldValue.(uint32), fieldName)
+			c.Flags.SetUInt32(lowerName, fieldValue.(uint32), fieldName)
 		}
 	}
 
-	flags.SetString("test.v", "", "test")
-	flags.SetBool("test.paniconexit0", false, "test")
-	flags.SetString("test.run", "", "test")
-	flags.SetString("test.timeout", "", "test")
+	c.Flags.SetString("test.v", "", "test")
+	c.Flags.SetBool("test.paniconexit0", false, "test")
+	c.Flags.SetString("test.run", "", "test")
+	c.Flags.SetString("test.timeout", "", "test")
 }
 
-func (c *ConfBase) ParseFlags(flags iface.IFlags) {
+func (c *ConfBase) ParseFlags() {
 	// 获取反射值对象
 	val := reflect.ValueOf(c)
 
@@ -162,16 +163,16 @@ func (c *ConfBase) ParseFlags(flags iface.IFlags) {
 		kind := typeField.Type.Kind()
 
 		if kind == reflect.String {
-			v, _ := flags.GetString(lowerName, fieldValue.(string))
+			v, _ := c.Flags.GetString(lowerName, fieldValue.(string))
 			valField.SetString(v)
 		} else if kind == reflect.Bool {
-			v, _ := flags.GetBool(lowerName, fieldValue.(bool))
+			v, _ := c.Flags.GetBool(lowerName, fieldValue.(bool))
 			valField.SetBool(v)
 		} else if kind == reflect.Int {
-			v, _ := flags.GetInt(lowerName, fieldValue.(int))
+			v, _ := c.Flags.GetInt(lowerName, fieldValue.(int))
 			valField.SetInt(int64(v))
 		} else if kind == reflect.Uint32 {
-			v, _ := flags.GetUInt32(lowerName, fieldValue.(uint32))
+			v, _ := c.Flags.GetUInt32(lowerName, fieldValue.(uint32))
 			valField.SetUint(uint64(v))
 		}
 	}
