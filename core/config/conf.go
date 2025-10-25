@@ -120,6 +120,10 @@ func (c *ConfBase) initFlags(child interface{}) {
 		lowerName := getCmdName(fieldName)
 		fieldValue := valField.Interface()
 
+		if fieldName == "Flags" {
+			continue
+		}
+
 		kind := typeField.Type.Kind()
 
 		if kind == reflect.String {
@@ -130,6 +134,8 @@ func (c *ConfBase) initFlags(child interface{}) {
 			c.Flags.SetInt(lowerName, fieldValue.(int), fieldName)
 		} else if kind == reflect.Uint32 {
 			c.Flags.SetUInt32(lowerName, fieldValue.(uint32), fieldName)
+		} else if kind == reflect.Struct {
+			c.initFlags(fieldValue)
 		}
 	}
 
@@ -164,6 +170,10 @@ func (c *ConfBase) parseFlags(child interface{}) {
 		lowerName := getCmdName(fieldName)
 		fieldValue := valField.Interface()
 
+		if fieldName == "Flags" {
+			continue
+		}
+
 		kind := typeField.Type.Kind()
 
 		if kind == reflect.String {
@@ -178,6 +188,8 @@ func (c *ConfBase) parseFlags(child interface{}) {
 		} else if kind == reflect.Uint32 {
 			v, _ := c.Flags.GetUInt32(lowerName, fieldValue.(uint32))
 			valField.SetUint(uint64(v))
+		} else if kind == reflect.Struct {
+			c.parseFlags(fieldValue)
 		}
 	}
 }
