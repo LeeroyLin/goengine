@@ -3,7 +3,7 @@ package iface
 import "net/http"
 
 // HttpCodeMsgHandler http内部错误码转外部错误码和文本
-type HttpCodeMsgHandler func(innerCode uint32) (uint32, string)
+type HttpCodeMsgHandler func(code uint32, inner bool) (uint32, string)
 
 type HttpServerResType bool
 

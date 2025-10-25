@@ -94,7 +94,7 @@ func (s *HttpServer) RespJson(w http.ResponseWriter, data interface{}) iface.Htt
 	// 设置响应头为JSON格式
 	w.Header().Set("Content-Type", "application/json")
 
-	errCode, msg := s.httpCodeMsgHandler(INNER_HTTP_SUCCESS)
+	errCode, msg := s.httpCodeMsgHandler(INNER_HTTP_SUCCESS, true)
 
 	err := json.NewEncoder(w).Encode(WebRespData{
 		ErrCode: errCode,
@@ -114,7 +114,7 @@ func (s *HttpServer) RespErr(w http.ResponseWriter, errCode uint32) iface.HttpSe
 	// 设置响应头为JSON格式
 	w.Header().Set("Content-Type", "application/json")
 
-	errCode, msg := s.httpCodeMsgHandler(errCode)
+	errCode, msg := s.httpCodeMsgHandler(errCode, false)
 
 	err := json.NewEncoder(w).Encode(WebRespData{
 		ErrCode: errCode,
@@ -164,13 +164,31 @@ func (s *HttpServer) runAsHttp() {
 	}
 }
 
+func (s *HttpServer) respErrInner(w http.ResponseWriter, errCode uint32) iface.HttpServerResType {
+	// 设置响应头为JSON格式
+	w.Header().Set("Content-Type", "application/json")
+
+	errCode, msg := s.httpCodeMsgHandler(errCode, true)
+
+	err := json.NewEncoder(w).Encode(WebRespData{
+		ErrCode: errCode,
+		Message: msg,
+	})
+	if err != nil {
+		elog.Error("[HttpServer] resp err code err:", s.addr, err)
+		return false
+	}
+
+	return true
+}
+
 // HandlePostFunc 注册Post事件
 func HandlePostFunc[T interface{}](s *HttpServer, pattern string, handler func(http.ResponseWriter, *http.Request, T) iface.HttpServerResType) {
 	s.mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// 不是POST方法
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
-			s.RespErr(w, INNER_HTTP_POST_ONLY)
+			s.respErrInner(w, INNER_HTTP_POST_ONLY)
 			return
 		}
 
@@ -178,7 +196,7 @@ func HandlePostFunc[T interface{}](s *HttpServer, pattern string, handler func(h
 
 		// 请求结构不是json
 		if !strings.Contains(contentType, "application/json") {
-			s.RespErr(w, INNER_HTTP_NEED_JSON_TYPE)
+			s.respErrInner(w, INNER_HTTP_NEED_JSON_TYPE)
 			return
 		}
 
@@ -189,7 +207,7 @@ func HandlePostFunc[T interface{}](s *HttpServer, pattern string, handler func(h
 
 		if err != nil {
 			elog.Error("[HttpServer] decode req json data err:", s.addr, err)
-			s.RespErr(w, INNER_HTTP_WRONG_REQ_DATA)
+			s.respErrInner(w, INNER_HTTP_WRONG_REQ_DATA)
 			return
 		}
 
@@ -204,7 +222,7 @@ func HandleGetFunc(s *HttpServer, pattern string, handler func(http.ResponseWrit
 		// 不是Get方法
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
-			s.RespErr(w, INNER_HTTP_GET_ONLY)
+			s.respErrInner(w, INNER_HTTP_GET_ONLY)
 			return
 		}
 
