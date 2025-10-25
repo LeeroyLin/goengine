@@ -44,6 +44,9 @@ func (c *ConfBase) Setup(child interface{}, confFilePath string) {
 	// 初始化命令行参数
 	c.initFlags(child)
 
+	// 初始化测试命令行参数
+	c.initTestFlags()
+
 	// 读取命令行参数
 	cliArgs := os.Args[1:]
 	err := c.Flags.Parse(cliArgs)
@@ -138,7 +141,9 @@ func (c *ConfBase) initFlags(child interface{}) {
 			c.initFlags(fieldValue)
 		}
 	}
+}
 
+func (c *ConfBase) initTestFlags() {
 	c.Flags.SetString("test.v", "", "test")
 	c.Flags.SetBool("test.paniconexit0", false, "test")
 	c.Flags.SetString("test.run", "", "test")
