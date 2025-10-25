@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/LeeroyLin/goengine/iface/idb"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -29,10 +31,9 @@ func NewDBWorker(url string, rp *readpref.ReadPref) idb.IDBWorker {
 	return w
 }
 
-func (w *DBWorker) Run() {
+func (w *DBWorker) Run() error {
 	if w.cbHandler == nil {
-		elog.Error("[MongoDB] cbHandler have not been set yet.", w.url)
-		return
+		return errors.New(fmt.Sprint("[MongoDB] cbHandler have not been set yet", w.url))
 	}
 
 	clientOpts := options.Client().ApplyURI("mongodb://" + w.url).SetReadPreference(w.rp)
@@ -41,14 +42,12 @@ func (w *DBWorker) Run() {
 
 	client, err := mongo.Connect(context.Background(), clientOpts)
 	if err != nil {
-		elog.Error("[MongoDB] Connect db err.", w.url, err)
-		return
+		return errors.New(fmt.Sprint("[MongoDB] Connect db err.", w.url, err))
 	}
 
 	err = client.Ping(context.Background(), nil)
 	if err != nil {
-		elog.Error("[MongoDB] Connect db ping err.", w.url, err)
-		return
+		return errors.New(fmt.Sprint("[MongoDB] Connect db ping err.", w.url, err))
 	}
 
 	w.mongoClient = client
@@ -56,12 +55,14 @@ func (w *DBWorker) Run() {
 	elog.Info("[MongoDB] Connect db success.", w.url)
 
 	go w.exec()
+
+	return nil
 }
 
-func (w *DBWorker) Stop() {
+func (w *DBWorker) Stop() error {
 	select {
 	case <-w.closeChan:
-		return
+		return nil
 	default:
 		close(w.closeChan)
 
@@ -69,10 +70,12 @@ func (w *DBWorker) Stop() {
 
 		err := w.mongoClient.Disconnect(context.Background())
 		if err != nil {
-			elog.Error("[MongoDB] Disconnect db err.", w.url, err)
-			return
+			elog.Fatal("[MongoDB] Disconnect db err.", w.url, err)
+			return err
 		}
 	}
+
+	return nil
 }
 
 func (w *DBWorker) SetCBHandler(handler func(idb.IDBOp, interface{}, error)) {

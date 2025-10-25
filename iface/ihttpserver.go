@@ -9,8 +9,8 @@ type HttpServerResType bool
 
 type IHttpServer interface {
 	Init()
-	Run()
-	Stop()
+	Run() error
+	Stop() error
 	SetSSLFile(certFile, keyFile string)
 	// RespJson 返回json数据
 	RespJson(w http.ResponseWriter, data interface{}) HttpServerResType
