@@ -1,11 +1,9 @@
 package network
 
 import (
-	"errors"
 	"fmt"
 	"github.com/LeeroyLin/goengine/core/syncmap"
 	"github.com/LeeroyLin/goengine/iface/inetwork"
-	"strconv"
 )
 
 type ConnManager struct {
@@ -23,13 +21,8 @@ func (cm *ConnManager) RemoveConn(conn inetwork.IConnection) {
 }
 
 // Get 利用ConnId获得连接
-func (cm *ConnManager) Get(connId uint32) (inetwork.IConnection, error) {
-	conn, ok := cm.connections.Get(connId)
-	if !ok {
-		return nil, errors.New("[ConnMgr] connection not found. ConnId:" + strconv.Itoa(int(connId)))
-	}
-
-	return conn.(inetwork.IConnection), nil
+func (cm *ConnManager) Get(connId uint32) (inetwork.IConnection, bool) {
+	return cm.connections.Get(connId)
 }
 
 // Size 获得当前连接数

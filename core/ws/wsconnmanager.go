@@ -23,13 +23,8 @@ func (cm *WSConnManager) RemoveConn(conn iwebsocket.IWSConnection) {
 }
 
 // Get 利用ConnId获得连接
-func (cm *WSConnManager) Get(connId uint32) (iwebsocket.IWSConnection, error) {
-	conn, ok := cm.connections.Get(connId)
-	if !ok {
-		return nil, errors.New("[ConnMgr] connection not found. ConnId:" + strconv.Itoa(int(connId)))
-	}
-
-	return conn.(iwebsocket.IWSConnection), nil
+func (cm *WSConnManager) Get(connId uint32) (iwebsocket.IWSConnection, bool) {
+	return cm.connections.Get(connId)
 }
 
 // Size 获得当前连接数
