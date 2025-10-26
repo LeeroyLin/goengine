@@ -1,8 +1,9 @@
 package timer
 
 import (
+	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/syncmap"
 	"sync"
-	"zinx_learning/zinx/zlog"
 )
 
 // TimeWheel 时间轮 将Timer按时间刻度存储 时间轮可嵌套
@@ -16,7 +17,7 @@ type TimeWheel struct {
 	// 当前时间指针指向，等待执行
 	currIndex int
 	// 所有timer 第一层键为时间刻度，第二层键为timer id
-	timerQueue map[int]map[uint32]*Timer
+	timerQueue map[int]*syncmap.SyncMap[uint32, *Timer]
 	// 下一层时间轮
 	nextTimeWheel *TimeWheel
 	// 时间叠加
@@ -40,14 +41,14 @@ func NewTimeWheel(name string, scales int, scalesIntervalMS int64) *TimeWheel {
 		name:             name,
 		scales:           scales,
 		scalesIntervalMS: scalesIntervalMS,
-		timerQueue:       make(map[int]map[uint32]*Timer),
+		timerQueue:       make(map[int]*syncmap.SyncMap[uint32, *Timer]),
 	}
 
 	for i := 0; i < scales; i++ {
-		wheel.timerQueue[i] = make(map[uint32]*Timer)
+		wheel.timerQueue[i] = syncmap.NewSyncMap[uint32, *Timer]()
 	}
 
-	zlog.Info("[TimeWheel] init time wheel:", name, "scales:", scales, "scalesIntervalMS:", scalesIntervalMS, "is down.")
+	elog.Info("[TimeWheel] init time wheel:", name, "scales:", scales, "scalesIntervalMS:", scalesIntervalMS, "is down.")
 
 	return wheel
 }
@@ -72,7 +73,8 @@ func (tw *TimeWheel) AddTimer(timer *Timer) {
 		}
 
 		// 直接添加到当前刻度
-		tw.timerQueue[tw.currIndex][timer.GetId()] = timer
+		m := tw.timerQueue[tw.currIndex]
+		m.Add(timer.GetId(), timer)
 		return
 	}
 
@@ -84,7 +86,8 @@ func (tw *TimeWheel) AddTimer(timer *Timer) {
 	if dn < 0 {
 		dn = 0
 	}
-	tw.timerQueue[(tw.currIndex+int(dn))%tw.scales][timer.GetId()] = timer
+	m := tw.timerQueue[(tw.currIndex+int(dn))%tw.scales]
+	m.Add(timer.GetId(), timer)
 }
 
 // RemoveTimer 移除计时器
@@ -92,12 +95,16 @@ func (tw *TimeWheel) RemoveTimer(tid uint32) {
 	tw.Lock()
 	defer tw.Unlock()
 
-	for scales, m := range tw.timerQueue {
-		if _, ok := m[tid]; ok {
-			delete(tw.timerQueue[scales], tid)
+	for _, m := range tw.timerQueue {
+		if _, ok := m.Get(tid); ok {
+			m.Delete(tid)
 			return
 		}
 	}
+}
+
+func (tw *TimeWheel) ClearTimer() {
+
 }
 
 // AddNextTimeWheel 添加下一层时间轮
@@ -160,17 +167,19 @@ func (tw *TimeWheel) tryPushToNext() {
 
 	now := CurrMilli()
 
-	for tid, timer := range m {
+	m.Range(func(tid uint32, timer *Timer) bool {
 		deltaMS := timer.callAtMS - now
 
 		// 剩余时间小于刻度间隔时间
 		if deltaMS <= tw.scalesIntervalMS {
-			delete(m, tid)
+			m.Delete(tid)
 
 			// 记录到下一层时间轮
 			tw.nextTimeWheel.AddTimer(timer)
 		}
-	}
+
+		return true
+	})
 }
 
 // 获得可回调的计时器
@@ -182,18 +191,20 @@ func (tw *TimeWheel) getAvailableTimers() []*Timer {
 	// 可以回调的计时器
 	callAvailableTimers := make([]*Timer, 0)
 
-	for tid, timer := range m {
+	m.Range(func(tid uint32, timer *Timer) bool {
 		deltaMS := timer.callAtMS - now
 
 		// 时间满足
 		if deltaMS <= 0 {
-			delete(m, tid)
+			m.Delete(tid)
 
 			// 记录到可回调计时器列表
 			callAvailableTimers = append(callAvailableTimers, timer)
-			continue
+			return true
 		}
-	}
+
+		return true
+	})
 
 	return callAvailableTimers
 }

@@ -1,6 +1,7 @@
 package timer
 
 import (
+	"github.com/LeeroyLin/goengine/core/pool"
 	"sync"
 	"time"
 )
@@ -21,15 +22,15 @@ const (
 	TIMERS_MAX_CAP = 2048 // 每个时间轮刻度挂载定时器的最大个数
 )
 
-var idGen uint32 = 0
 var genMutex sync.Mutex
+
+var idPool = pool.NewUint32IdPool(10000)
 
 func getNextID() uint32 {
 	genMutex.Lock()
 	defer genMutex.Unlock()
 
-	idGen++
-	return idGen
+	return idPool.Get()
 }
 
 type Timer struct {

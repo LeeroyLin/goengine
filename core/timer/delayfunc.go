@@ -2,6 +2,7 @@ package timer
 
 import (
 	"fmt"
+	"github.com/LeeroyLin/goengine/core/elog"
 	"reflect"
 	"runtime"
 )
@@ -27,7 +28,7 @@ func (df *DelayFunc) String() string {
 func (df *DelayFunc) Call() {
 	defer func() {
 		if err := recover(); err != nil {
-			zlog.Error(df.String(), "Call err:", err)
+			elog.Error(df.String(), "Call err:", err)
 		}
 	}()
 

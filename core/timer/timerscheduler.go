@@ -44,6 +44,9 @@ func (ts *TimerScheduler) RemoveTimer(tid uint32) {
 	ts.twSecond.RemoveTimer(tid)
 }
 
+func (ts *TimerScheduler) ClearTimer() {
+}
+
 func (ts *TimerScheduler) Run() {
 	ts.Lock()
 	defer ts.Unlock()
