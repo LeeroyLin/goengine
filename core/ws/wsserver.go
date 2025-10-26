@@ -113,7 +113,7 @@ func NewWSServer(conf *config.ConfBase, dataPack inetwork.IDataPack) *WSServer {
 
 func (s *WSServer) serveWS(w http.ResponseWriter, r *http.Request) {
 	// 是否连接数达上限
-	if s.connMgr.Len() >= s.conf.MaxConn {
+	if s.connMgr.Size() >= s.conf.MaxConn {
 		elog.Error("[Server] Already max conn.")
 		return
 	}

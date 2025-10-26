@@ -3,18 +3,18 @@ package network
 import (
 	"errors"
 	"fmt"
+	"github.com/LeeroyLin/goengine/core/syncmap"
 	"github.com/LeeroyLin/goengine/iface/inetwork"
 	"strconv"
-	"sync"
 )
 
 type ConnManager struct {
-	connections sync.Map
+	connections *syncmap.SyncMap[uint32, inetwork.IConnection]
 }
 
 // Add 添加连接
 func (cm *ConnManager) Add(conn inetwork.IConnection) {
-	cm.connections.Store(conn.GetConnID(), conn)
+	cm.connections.Add(conn.GetConnID(), conn)
 }
 
 // RemoveConn 删除连接
@@ -24,7 +24,7 @@ func (cm *ConnManager) RemoveConn(conn inetwork.IConnection) {
 
 // Get 利用ConnId获得连接
 func (cm *ConnManager) Get(connId uint32) (inetwork.IConnection, error) {
-	conn, ok := cm.connections.Load(connId)
+	conn, ok := cm.connections.Get(connId)
 	if !ok {
 		return nil, errors.New("[ConnMgr] connection not found. ConnId:" + strconv.Itoa(int(connId)))
 	}
@@ -32,24 +32,15 @@ func (cm *ConnManager) Get(connId uint32) (inetwork.IConnection, error) {
 	return conn.(inetwork.IConnection), nil
 }
 
-// Len 获得当前连接数
-func (cm *ConnManager) Len() int {
-	cnt := 0
-
-	cm.connections.Range(func(key any, value any) bool {
-		cnt++
-
-		return true
-	})
-
-	return cnt
+// Size 获得当前连接数
+func (cm *ConnManager) Size() int {
+	return cm.connections.Size()
 }
 
 // Remove 移除连接
 func (cm *ConnManager) Remove(connId uint32) {
-	conn, ok := cm.connections.Load(connId)
+	conn, ok := cm.connections.GetAndDelete(connId)
 	if ok {
-		cm.connections.Delete(connId)
 		err := conn.(inetwork.IConnection).GetTCPConnection().Close()
 		if err != nil {
 			fmt.Println("[ConnMgr] close conn error ", err)
@@ -61,14 +52,16 @@ func (cm *ConnManager) Remove(connId uint32) {
 // StopAllConn 停止所有连接
 func (cm *ConnManager) StopAllConn() {
 	fmt.Println("[ConnMgr] try stop all connections...")
-	cm.connections.Range(func(key any, value any) bool {
-		value.(inetwork.IConnection).Stop()
+	cm.connections.Range(func(connId uint32, conn inetwork.IConnection) bool {
+		conn.(inetwork.IConnection).Stop()
 		return true
 	})
 }
 
 func NewConnManager() inetwork.IConnManager {
-	cm := &ConnManager{}
+	cm := &ConnManager{
+		connections: syncmap.NewSyncMap[uint32, inetwork.IConnection](),
+	}
 
 	return cm
 }

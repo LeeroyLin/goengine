@@ -3,18 +3,18 @@ package ws
 import (
 	"errors"
 	"fmt"
+	"github.com/LeeroyLin/goengine/core/syncmap"
 	"github.com/LeeroyLin/goengine/iface/iwebsocket"
 	"strconv"
-	"sync"
 )
 
 type WSConnManager struct {
-	connections sync.Map
+	connections *syncmap.SyncMap[uint32, iwebsocket.IWSConnection]
 }
 
 // Add 添加连接
 func (cm *WSConnManager) Add(conn iwebsocket.IWSConnection) {
-	cm.connections.Store(conn.GetConnID(), conn)
+	cm.connections.Add(conn.GetConnID(), conn)
 }
 
 // RemoveConn 删除连接
@@ -24,7 +24,7 @@ func (cm *WSConnManager) RemoveConn(conn iwebsocket.IWSConnection) {
 
 // Get 利用ConnId获得连接
 func (cm *WSConnManager) Get(connId uint32) (iwebsocket.IWSConnection, error) {
-	conn, ok := cm.connections.Load(connId)
+	conn, ok := cm.connections.Get(connId)
 	if !ok {
 		return nil, errors.New("[ConnMgr] connection not found. ConnId:" + strconv.Itoa(int(connId)))
 	}
@@ -32,24 +32,15 @@ func (cm *WSConnManager) Get(connId uint32) (iwebsocket.IWSConnection, error) {
 	return conn.(iwebsocket.IWSConnection), nil
 }
 
-// Len 获得当前连接数
-func (cm *WSConnManager) Len() int {
-	cnt := 0
-
-	cm.connections.Range(func(key any, value any) bool {
-		cnt++
-
-		return true
-	})
-
-	return cnt
+// Size 获得当前连接数
+func (cm *WSConnManager) Size() int {
+	return cm.connections.Size()
 }
 
 // Remove 移除连接
 func (cm *WSConnManager) Remove(connId uint32) {
-	conn, ok := cm.connections.Load(connId)
+	conn, ok := cm.connections.GetAndDelete(connId)
 	if ok {
-		cm.connections.Delete(connId)
 		err := conn.(iwebsocket.IWSConnection).GetTCPConnection().Close()
 		if err != nil {
 			fmt.Println("[ConnMgr] close conn error ", err)
@@ -61,14 +52,16 @@ func (cm *WSConnManager) Remove(connId uint32) {
 // StopAllConn 停止所有连接
 func (cm *WSConnManager) StopAllConn() {
 	fmt.Println("[ConnMgr] try stop all connections...")
-	cm.connections.Range(func(key any, value any) bool {
-		value.(iwebsocket.IWSConnection).Stop()
+	cm.connections.Range(func(connId uint32, conn iwebsocket.IWSConnection) bool {
+		conn.(iwebsocket.IWSConnection).Stop()
 		return true
 	})
 }
 
 func NewWSConnManager() iwebsocket.IWSConnManager {
-	cm := &WSConnManager{}
+	cm := &WSConnManager{
+		connections: syncmap.NewSyncMap[uint32, iwebsocket.IWSConnection](),
+	}
 
 	return cm
 }
