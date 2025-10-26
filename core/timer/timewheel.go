@@ -92,9 +92,6 @@ func (tw *TimeWheel) AddTimer(timer *Timer) {
 
 // RemoveTimer 移除计时器
 func (tw *TimeWheel) RemoveTimer(tid uint32) {
-	tw.Lock()
-	defer tw.Unlock()
-
 	for _, m := range tw.timerQueue {
 		if _, ok := m.Get(tid); ok {
 			m.Delete(tid)
@@ -104,7 +101,9 @@ func (tw *TimeWheel) RemoveTimer(tid uint32) {
 }
 
 func (tw *TimeWheel) ClearTimer() {
-
+	for _, m := range tw.timerQueue {
+		m.Clear()
+	}
 }
 
 // AddNextTimeWheel 添加下一层时间轮

@@ -1,37 +1,32 @@
 package timer
 
 import (
-	"context"
 	"sync"
 	"time"
 )
 
 type TimerScheduler struct {
-	twHour    *TimeWheel
-	twMinute  *TimeWheel
-	twSecond  *TimeWheel
-	isRunning bool
+	twHour   *TimeWheel
+	twMinute *TimeWheel
+	twSecond *TimeWheel
+
+	closeChan chan interface{}
 
 	sync.Mutex
-	ctx    context.Context
-	cancel context.CancelFunc
 }
 
 func NewTimerScheduler() *TimerScheduler {
 	ts := &TimerScheduler{
-		twHour:   NewTimeWheel("hour", 60, 1000000),
-		twMinute: NewTimeWheel("minute", 60, 1000),
-		twSecond: NewTimeWheel("second", 10, 100),
+		twHour:    NewTimeWheel("hour", 60, 1000000),
+		twMinute:  NewTimeWheel("minute", 60, 1000),
+		twSecond:  NewTimeWheel("second", 10, 100),
+		closeChan: make(chan interface{}),
 	}
 
 	ts.twHour.AddNextTimeWheel(ts.twMinute)
 	ts.twMinute.AddNextTimeWheel(ts.twSecond)
 
 	return ts
-}
-
-func (ts *TimerScheduler) IsRunning() bool {
-	return ts.isRunning
 }
 
 func (ts *TimerScheduler) AddTimer(t *Timer) {
@@ -45,22 +40,19 @@ func (ts *TimerScheduler) RemoveTimer(tid uint32) {
 }
 
 func (ts *TimerScheduler) ClearTimer() {
+	ts.twHour.ClearTimer()
+	ts.twMinute.ClearTimer()
+	ts.twSecond.ClearTimer()
 }
 
 func (ts *TimerScheduler) Run() {
 	ts.Lock()
 	defer ts.Unlock()
 
-	if ts.isRunning {
-		return
-	}
-
-	ts.ctx, ts.cancel = context.WithCancel(context.Background())
-
 	go func() {
 		for {
 			select {
-			case <-ts.ctx.Done():
+			case <-ts.closeChan:
 				return
 			default:
 				lastMS := CurrMilli()
@@ -76,13 +68,10 @@ func (ts *TimerScheduler) Run() {
 }
 
 func (ts *TimerScheduler) Stop() {
-	ts.Lock()
-	defer ts.Unlock()
-
-	if !ts.isRunning {
+	select {
+	case <-ts.closeChan:
 		return
+	default:
+		close(ts.closeChan)
 	}
-
-	ts.isRunning = false
-	ts.cancel()
 }
