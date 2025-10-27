@@ -18,4 +18,5 @@ type IHttpServer interface {
 	RespErr(w http.ResponseWriter, errCode uint32) HttpServerResType
 	// RespCustom 自定义返回
 	RespCustom(err error) HttpServerResType
+	GetMux() *http.ServeMux
 }

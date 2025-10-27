@@ -17,7 +17,7 @@ type WebRespData struct {
 
 type HttpServer struct {
 	Server             *http.Server
-	Mux                *http.ServeMux
+	mux                *http.ServeMux
 	IsHttps            bool
 	IP                 string
 	Port               int
@@ -48,8 +48,8 @@ func NewHttpServer(ip string, port int, isHttps bool, httpCodeMsgHandler iface.H
 }
 
 func (s *HttpServer) Init() {
-	s.Mux = http.NewServeMux()
-	s.Server.Handler = s.Mux
+	s.mux = http.NewServeMux()
+	s.Server.Handler = s.mux
 }
 
 func (s *HttpServer) Run() {
@@ -137,6 +137,10 @@ func (s *HttpServer) RespCustom(err error) iface.HttpServerResType {
 	return true
 }
 
+func (s *HttpServer) GetMux() *http.ServeMux {
+	return s.mux
+}
+
 func (s *HttpServer) runAsHttps() {
 	// 打印服务器启动信息
 	elog.Info("[HttpServer] Start https...", s.addr)
@@ -184,7 +188,7 @@ func (s *HttpServer) respErrInner(w http.ResponseWriter, errCode uint32) iface.H
 
 // HandlePostFunc 注册Post事件
 func HandlePostFunc[T interface{}](s *HttpServer, pattern string, handler func(http.ResponseWriter, *http.Request, T) iface.HttpServerResType) {
-	s.Mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+	s.mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// 不是POST方法
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -218,7 +222,7 @@ func HandlePostFunc[T interface{}](s *HttpServer, pattern string, handler func(h
 
 // HandleGetFunc 注册Get事件
 func HandleGetFunc(s *HttpServer, pattern string, handler func(http.ResponseWriter, *http.Request) iface.HttpServerResType) {
-	s.Mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+	s.mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// 不是Get方法
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -233,7 +237,7 @@ func HandleGetFunc(s *HttpServer, pattern string, handler func(http.ResponseWrit
 
 // HandleCustomFunc 注册自定义事件
 func HandleCustomFunc(s *HttpServer, pattern string, handler func(http.ResponseWriter, *http.Request) iface.HttpServerResType) {
-	s.Mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+	s.mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// 回调
 		handler(w, r)
 	})
