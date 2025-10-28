@@ -23,9 +23,6 @@ type Server struct {
 }
 
 func (s *Server) Start() {
-	logStr := s.conf.GetLogStr()
-	elog.Infof("[Server] start server. conf: %s", logStr)
-
 	s.exitChan = make(chan interface{})
 
 	go func() {

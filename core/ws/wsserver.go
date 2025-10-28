@@ -26,9 +26,6 @@ type WSServer struct {
 }
 
 func (s *WSServer) Start() {
-	logStr := s.conf.GetLogStr()
-	elog.Infof("[Server] start server. conf: %s", logStr)
-
 	s.exitChan = make(chan interface{})
 
 	// 升级器，用于将 HTTP 连接升级为 WebSocket 连接
