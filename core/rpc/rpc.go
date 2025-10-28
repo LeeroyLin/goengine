@@ -12,6 +12,15 @@ type RPC struct {
 	clientConns *syncmap.SyncMap[string, *grpc.ClientConn]
 }
 
+func NewRPC() *RPC {
+	rpc := &RPC{
+		servers:     syncmap.NewSyncMap[string, *grpc.Server](),
+		clientConns: syncmap.NewSyncMap[string, *grpc.ClientConn](),
+	}
+	
+	return rpc
+}
+
 func (rpc *RPC) NewServer(url string, opt ...grpc.ServerOption) *grpc.Server {
 	s := grpc.NewServer(opt...)
 
