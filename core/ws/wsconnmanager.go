@@ -1,11 +1,9 @@
 package ws
 
 import (
-	"errors"
 	"fmt"
 	"github.com/LeeroyLin/goengine/core/syncmap"
 	"github.com/LeeroyLin/goengine/iface/iwebsocket"
-	"strconv"
 )
 
 type WSConnManager struct {
