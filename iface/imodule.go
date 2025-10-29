@@ -5,7 +5,7 @@ type IModule interface {
 	GetName() string            // 获得模块名
 	GetMsgCenter() IMsgCenter   // 获得消息中心
 	GetDispatcher() IDispatcher // 获得模块间消息分发器
-	DoInit(dispatcher IDispatcher, msgChanCapacity int, closeChan chan interface{})
+	DoInit(dispatcher IDispatcher, rpcGetter IRPCGetter, msgChanCapacity int, closeChan chan interface{})
 	DoRun() error
 	DoStop() error
 }
