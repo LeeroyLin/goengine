@@ -16,14 +16,11 @@ type Module struct {
 	RPC        *rpc.RPC
 }
 
-func NewModule(name string, hasRPC bool) Module {
+func NewModule(name string) Module {
 	m := Module{
 		name: name,
 		mgrs: make([]iface.IMgr, 0),
-	}
-
-	if hasRPC {
-		m.RPC = rpc.NewRPC()
+		RPC:  rpc.NewRPC(),
 	}
 
 	return m
@@ -64,9 +61,7 @@ func (m *Module) DoInit(dispatcher iface.IDispatcher, msgChanCapacity int, close
 }
 
 func (m *Module) DoRun() error {
-	if m.RPC != nil {
-		m.RPC.StartServe()
-	}
+	m.RPC.StartServe()
 
 	// 运行模块内消息中心
 	m.msgCenter.Run()
@@ -85,9 +80,7 @@ func (m *Module) DoStop() error {
 	// 停止管理器
 	m.stopMgrs()
 
-	if m.RPC != nil {
-		m.RPC.ClearAll()
-	}
+	m.RPC.ClearAll()
 
 	return err
 }
