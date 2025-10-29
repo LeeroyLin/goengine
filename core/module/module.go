@@ -64,6 +64,10 @@ func (m *Module) DoInit(dispatcher iface.IDispatcher, msgChanCapacity int, close
 }
 
 func (m *Module) DoRun() error {
+	if m.RPC != nil {
+		m.RPC.StartServe()
+	}
+
 	// 运行模块内消息中心
 	m.msgCenter.Run()
 
