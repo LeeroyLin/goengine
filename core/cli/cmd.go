@@ -39,6 +39,18 @@ func NewRootCmd(welcomeStr string) *Cmd {
 	return c
 }
 
+func (c *Cmd) Use() string {
+	return c.root.Use
+}
+
+func (c *Cmd) Short() string {
+	return c.root.Short
+}
+
+func (c *Cmd) Long() string {
+	return c.root.Long
+}
+
 func (c *Cmd) Run() {
 	// 初始化 readline（优化输入体验，支持历史记录、光标移动）
 	rl, err := readline.NewEx(&readline.Config{
