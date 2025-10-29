@@ -81,7 +81,7 @@ func (m *Module) DoStop() error {
 }
 
 func (m *Module) GetRPC() iface.IRPC {
-	return m.rpcGetter.GetPRC()
+	return m.rpcGetter.GetRPC()
 }
 
 // addMgrs 添加管理器
