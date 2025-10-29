@@ -17,25 +17,18 @@ type App struct {
 	closeChan         chan interface{} // 用于关闭的通道
 	preModuleGroup    *module.ModuleGroup
 	middleModuleGroup *module.ModuleGroup
-	markStop          bool // 标记停止
-	preparing         bool // 准备中
-	running           bool // 运行中
-	appHandler        iface.IAppHandler
+	AppHandler        iface.IAppHandler
 	msgChanCapacity   int // 模块间消息通道容量
 	sync.RWMutex
 	RPC iface.IRPC
 }
 
 // NewApp 返回一个初始化的App
-func NewApp(name, desc string, appHandler iface.IAppHandler) *App {
+func NewApp(name, desc string) *App {
 	a := &App{
 		Name:            name,
 		Desc:            desc,
-		markStop:        false,
-		preparing:       false,
-		running:         false,
 		msgChanCapacity: 1024,
-		appHandler:      appHandler,
 		RPC:             rpc.NewRPC(),
 	}
 
@@ -45,7 +38,9 @@ func NewApp(name, desc string, appHandler iface.IAppHandler) *App {
 func (a *App) Init(preModules, modules []iface.IModule) {
 	elog.Info("[App] Init.", a.Name)
 
-	a.appHandler.OnBeforeInit()
+	if a.AppHandler != nil {
+		a.AppHandler.OnBeforeInit()
+	}
 
 	if a.closeChan == nil {
 		a.closeChan = make(chan interface{})
@@ -65,49 +60,30 @@ func (a *App) Init(preModules, modules []iface.IModule) {
 		a.middleModuleGroup.InitModules(modules)
 	}
 
-	a.appHandler.OnAfterInit()
+	if a.AppHandler != nil {
+		a.AppHandler.OnAfterInit()
+	}
 }
 
 // Run 运行应用
 //
 // param successCb 启动成功时的回调
 func (a *App) Run(successCb func()) {
-	a.Lock()
-	defer a.Unlock()
-
-	if a.running {
-		elog.Error("[App] app is running. ", a.Name)
-		return
-	}
-
-	if a.preparing {
-		elog.Error("[App] app is preparing. ", a.Name)
-		return
-	}
-
-	if a.markStop {
-		elog.Error("[App] app already mark stop. ", a.Name)
-		return
-	}
-
 	elog.Info("[App] Run.", a.Name, a.Desc)
 
-	a.preparing = true
-
-	a.appHandler.OnBeforeRun()
+	if a.AppHandler != nil {
+		a.AppHandler.OnBeforeRun()
+	}
 
 	go func() {
 		// 运行模块
 		a.middleModuleGroup.RunModules()
 
-		a.Lock()
-		a.preparing = false
-		a.running = true
-		a.Unlock()
-
 		a.RPC.StartServe()
 
-		a.appHandler.OnAfterRun()
+		if a.AppHandler != nil {
+			a.AppHandler.OnAfterRun()
+		}
 
 		elog.Info("[App] app is running.")
 
@@ -134,28 +110,11 @@ func (a *App) Stop() {
 }
 
 func (a *App) doStop() {
-	a.Lock()
-
-	if a.preparing {
-		a.markStop = true
-		a.Unlock()
-		return
-	}
-
-	if !a.running {
-		elog.Error("[App] can not stop app without running. ", a.Name)
-		a.Unlock()
-		return
-	}
-
-	a.markStop = true
-	a.running = false
-
-	a.Unlock()
-
 	elog.Info("[App] start stop app. ", a.Name)
 
-	a.appHandler.OnBeforeStop()
+	if a.AppHandler != nil {
+		a.AppHandler.OnBeforeStop()
+	}
 
 	go func() {
 		// 停止模块
@@ -167,11 +126,9 @@ func (a *App) doStop() {
 
 		a.RPC.ClearAll()
 
-		a.Lock()
-		a.markStop = false
-		a.Unlock()
-
-		a.appHandler.OnAfterStop()
+		if a.AppHandler != nil {
+			a.AppHandler.OnAfterStop()
+		}
 
 		elog.Info("[App] app stoped. ", a.Name)
 	}()
