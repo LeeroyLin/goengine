@@ -2,25 +2,23 @@ package module
 
 import (
 	"github.com/LeeroyLin/goengine/core/msgcenter"
-	"github.com/LeeroyLin/goengine/core/rpc"
 	"github.com/LeeroyLin/goengine/def"
 	"github.com/LeeroyLin/goengine/iface"
 )
 
 type Module struct {
 	name       string
-	msgCenter  iface.IMsgCenter  // 模块内的消息中心
+	msgCenter  iface.IMsgCenter // 模块内的消息中心
+	rpcGetter  iface.IRPCGetter
 	dispatcher iface.IDispatcher // 模块间消息分发器
 	mgrs       []iface.IMgr      // 管理器
 	life       iface.IModuleLife
-	RPC        *rpc.RPC
 }
 
 func NewModule(name string) Module {
 	m := Module{
 		name: name,
 		mgrs: make([]iface.IMgr, 0),
-		RPC:  rpc.NewRPC(),
 	}
 
 	return m
@@ -44,8 +42,9 @@ func (m *Module) GetDispatcher() iface.IDispatcher {
 	return m.dispatcher
 }
 
-func (m *Module) DoInit(dispatcher iface.IDispatcher, msgChanCapacity int, closeChan chan interface{}) {
+func (m *Module) DoInit(dispatcher iface.IDispatcher, rpcGetter iface.IRPCGetter, msgChanCapacity int, closeChan chan interface{}) {
 	m.dispatcher = dispatcher
+	m.rpcGetter = rpcGetter
 	m.msgCenter = msgcenter.NewMsgCenter(m.name, msgChanCapacity, closeChan)
 
 	m.life.OnInit()
@@ -61,8 +60,6 @@ func (m *Module) DoInit(dispatcher iface.IDispatcher, msgChanCapacity int, close
 }
 
 func (m *Module) DoRun() error {
-	m.RPC.StartServe()
-
 	// 运行模块内消息中心
 	m.msgCenter.Run()
 
@@ -80,9 +77,11 @@ func (m *Module) DoStop() error {
 	// 停止管理器
 	m.stopMgrs()
 
-	m.RPC.ClearAll()
-
 	return err
+}
+
+func (m *Module) GetRPC() iface.IRPC {
+	return m.rpcGetter.GetPRC()
 }
 
 // addMgrs 添加管理器

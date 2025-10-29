@@ -12,3 +12,12 @@ type IApp interface {
 	// Stop 停止应用
 	Stop()
 }
+
+type IAppHandler interface {
+	OnBeforeInit()
+	OnAfterInit()
+	OnBeforeRun()
+	OnAfterRun()
+	OnBeforeStop()
+	OnAfterStop()
+}

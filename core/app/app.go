@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/LeeroyLin/goengine/core/module"
+	"github.com/LeeroyLin/goengine/core/rpc"
 	"github.com/LeeroyLin/goengine/iface"
 	"sync"
 )
@@ -16,21 +17,17 @@ type App struct {
 	closeChan         chan interface{} // 用于关闭的通道
 	preModuleGroup    *module.ModuleGroup
 	middleModuleGroup *module.ModuleGroup
-	markStop          bool   // 标记停止
-	preparing         bool   // 准备中
-	running           bool   // 运行中
-	BeforeInitHandler func() // 初始化前回调
-	AfterInitHandler  func() // 初始化后回调
-	BeforeRunHandler  func() // 运行前回调
-	AfterRunHandler   func() // 运行后回调
-	BeforeStopHandler func() // 停止前回调
-	AfterStopHandler  func() // 停止后回调
-	msgChanCapacity   int    // 模块间消息通道容量
+	markStop          bool // 标记停止
+	preparing         bool // 准备中
+	running           bool // 运行中
+	appHandler        iface.IAppHandler
+	msgChanCapacity   int // 模块间消息通道容量
 	sync.RWMutex
+	RPC iface.IRPC
 }
 
 // NewApp 返回一个初始化的App
-func NewApp(name, desc string) *App {
+func NewApp(name, desc string, appHandler iface.IAppHandler) *App {
 	a := &App{
 		Name:            name,
 		Desc:            desc,
@@ -38,6 +35,8 @@ func NewApp(name, desc string) *App {
 		preparing:       false,
 		running:         false,
 		msgChanCapacity: 1024,
+		appHandler:      appHandler,
+		RPC:             rpc.NewRPC(),
 	}
 
 	return a
@@ -46,9 +45,7 @@ func NewApp(name, desc string) *App {
 func (a *App) Init(preModules, modules []iface.IModule) {
 	elog.Info("[App] Init.", a.Name)
 
-	if a.BeforeInitHandler != nil {
-		a.BeforeInitHandler()
-	}
+	a.appHandler.OnBeforeInit()
 
 	if a.closeChan == nil {
 		a.closeChan = make(chan interface{})
@@ -68,9 +65,7 @@ func (a *App) Init(preModules, modules []iface.IModule) {
 		a.middleModuleGroup.InitModules(modules)
 	}
 
-	if a.AfterInitHandler != nil {
-		a.AfterInitHandler()
-	}
+	a.appHandler.OnAfterInit()
 }
 
 // Run 运行应用
@@ -99,9 +94,7 @@ func (a *App) Run(successCb func()) {
 
 	a.preparing = true
 
-	if a.BeforeRunHandler != nil {
-		a.BeforeRunHandler()
-	}
+	a.appHandler.OnBeforeRun()
 
 	go func() {
 		// 运行模块
@@ -112,9 +105,9 @@ func (a *App) Run(successCb func()) {
 		a.running = true
 		a.Unlock()
 
-		if a.AfterRunHandler != nil {
-			a.AfterRunHandler()
-		}
+		a.RPC.StartServe()
+
+		a.appHandler.OnAfterRun()
 
 		elog.Info("[App] app is running.")
 
@@ -162,9 +155,7 @@ func (a *App) doStop() {
 
 	elog.Info("[App] start stop app. ", a.Name)
 
-	if a.BeforeStopHandler != nil {
-		a.BeforeStopHandler()
-	}
+	a.appHandler.OnBeforeStop()
 
 	go func() {
 		// 停止模块
@@ -174,13 +165,13 @@ func (a *App) doStop() {
 			a.preModuleGroup.StopModules()
 		}
 
+		a.RPC.ClearAll()
+
 		a.Lock()
 		a.markStop = false
 		a.Unlock()
 
-		if a.AfterStopHandler != nil {
-			a.AfterStopHandler()
-		}
+		a.appHandler.OnAfterStop()
 
 		elog.Info("[App] app stoped. ", a.Name)
 	}()

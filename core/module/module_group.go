@@ -8,16 +8,18 @@ import (
 
 type ModuleGroup struct {
 	modules         map[string]iface.IModule // 所有模块
+	rpcGetter       iface.IRPCGetter
 	dispatcher      iface.IDispatcher
 	msgChanCapacity int
 	closeChan       chan interface{}
 	wg              *sync.WaitGroup // 等待组
 }
 
-func NewModuleGroup(dispatcher iface.IDispatcher, msgChanCapacity int, closeChan chan interface{}) *ModuleGroup {
+func NewModuleGroup(dispatcher iface.IDispatcher, rpcGetter iface.IRPCGetter, msgChanCapacity int, closeChan chan interface{}) *ModuleGroup {
 	g := &ModuleGroup{
 		modules:         make(map[string]iface.IModule),
 		dispatcher:      dispatcher,
+		rpcGetter:       rpcGetter,
 		msgChanCapacity: msgChanCapacity,
 		closeChan:       closeChan,
 		wg:              &sync.WaitGroup{},
