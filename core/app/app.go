@@ -53,13 +53,13 @@ func (a *App) Init(preModules, modules []iface.IModule) {
 
 	// 先运行PreModule
 	if preModules != nil && len(preModules) > 0 {
-		a.preModuleGroup = module.NewModuleGroup(a, a.msgChanCapacity, a.closeChan)
+		a.preModuleGroup = module.NewModuleGroup(a, a, a.msgChanCapacity, a.closeChan)
 		a.preModuleGroup.InitModules(preModules)
 		a.preModuleGroup.RunModules()
 	}
 
 	if modules != nil && len(modules) > 0 {
-		a.middleModuleGroup = module.NewModuleGroup(a, a.msgChanCapacity, a.closeChan)
+		a.middleModuleGroup = module.NewModuleGroup(a, a, a.msgChanCapacity, a.closeChan)
 
 		// 添加并初始化模块
 		a.middleModuleGroup.InitModules(modules)

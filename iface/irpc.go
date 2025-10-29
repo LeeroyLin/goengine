@@ -11,10 +11,10 @@ type IRPC interface {
 
 	NewClientConn(url string, opts ...grpc.DialOption) (*grpc.ClientConn, error)
 	RemoveClientConn(url string)
-	
+
 	ClearAll()
 }
 
 type IRPCGetter interface {
-	GetPRC() IRPC
+	GetRPC() IRPC
 }
