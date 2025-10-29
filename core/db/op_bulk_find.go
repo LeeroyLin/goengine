@@ -12,13 +12,11 @@ import (
 type DBBulkFindOp struct {
 	DBOpBase
 	Filter     bson.M
-	Skip       int64
-	Limit      int64
-	Sort       bson.M
+	Options    []*options.FindOptions
 	ObjCreator func() interface{}
 }
 
-func NewDBBulkFindOp(fromModule, dbName, collName string, filter bson.M, objCreator func() interface{}) *DBBulkFindOp {
+func NewDBBulkFindOp(fromModule, dbName, collName string, filter bson.M, objCreator func() interface{}, opts ...*options.FindOptions) *DBBulkFindOp {
 	op := &DBBulkFindOp{
 		DBOpBase: DBOpBase{
 			FromModule: fromModule,
@@ -26,10 +24,12 @@ func NewDBBulkFindOp(fromModule, dbName, collName string, filter bson.M, objCrea
 			CollName:   collName,
 		},
 		Filter:     filter,
-		Skip:       0,
-		Limit:      0,
-		Sort:       nil,
+		Options:    nil,
 		ObjCreator: objCreator,
+	}
+
+	if opts != nil {
+		op.Options = opts
 	}
 
 	return op
@@ -38,16 +38,7 @@ func NewDBBulkFindOp(fromModule, dbName, collName string, filter bson.M, objCrea
 func (op DBBulkFindOp) Exec(c *mongo.Collection) (interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), DB_Op_Timeout)
 
-	findOptions := &options.FindOptions{
-		Skip:  &op.Skip,
-		Limit: &op.Limit,
-	}
-
-	if op.Sort != nil {
-		findOptions.Sort = op.Sort
-	}
-
-	cursor, err := c.Find(ctx, op.Filter, findOptions)
+	cursor, err := c.Find(ctx, op.Filter, op.Options...)
 	defer cancel()
 
 	if err != nil {
