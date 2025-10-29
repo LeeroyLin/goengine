@@ -37,7 +37,7 @@ func (g *ModuleGroup) InitModules(modules []iface.IModule) {
 
 	// 初始化模块，添加之后统一调用
 	for _, m := range g.modules {
-		m.DoInit(g.dispatcher, g.msgChanCapacity, g.closeChan)
+		m.DoInit(g.dispatcher, g.rpcGetter, g.msgChanCapacity, g.closeChan)
 	}
 }
 
