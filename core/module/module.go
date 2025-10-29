@@ -2,6 +2,7 @@ package module
 
 import (
 	"github.com/LeeroyLin/goengine/core/msgcenter"
+	"github.com/LeeroyLin/goengine/core/rpc"
 	"github.com/LeeroyLin/goengine/def"
 	"github.com/LeeroyLin/goengine/iface"
 )
@@ -12,12 +13,17 @@ type Module struct {
 	dispatcher iface.IDispatcher // 模块间消息分发器
 	mgrs       []iface.IMgr      // 管理器
 	life       iface.IModuleLife
+	RPC        *rpc.RPC
 }
 
-func NewModule(name string) Module {
+func NewModule(name string, hasRPC bool) Module {
 	m := Module{
 		name: name,
 		mgrs: make([]iface.IMgr, 0),
+	}
+
+	if hasRPC {
+		m.RPC = rpc.NewRPC()
 	}
 
 	return m
@@ -74,6 +80,10 @@ func (m *Module) DoStop() error {
 
 	// 停止管理器
 	m.stopMgrs()
+
+	if m.RPC != nil {
+		m.RPC.ClearAll()
+	}
 
 	return err
 }

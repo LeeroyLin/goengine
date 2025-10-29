@@ -17,7 +17,7 @@ func NewRPC() *RPC {
 		servers:     syncmap.NewSyncMap[string, *grpc.Server](),
 		clientConns: syncmap.NewSyncMap[string, *grpc.ClientConn](),
 	}
-	
+
 	return rpc
 }
 
@@ -84,4 +84,20 @@ func (rpc *RPC) RemoveClientConn(url string) {
 		c.Close()
 		rpc.clientConns.Delete(url)
 	}
+}
+
+func (rpc *RPC) ClearAll() {
+	rpc.servers.Range(func(url string, s *grpc.Server) bool {
+		s.Stop()
+		return true
+	})
+
+	rpc.servers.Clear()
+
+	rpc.clientConns.Range(func(url string, conn *grpc.ClientConn) bool {
+		conn.Close()
+		return true
+	})
+
+	rpc.clientConns.Clear()
 }
