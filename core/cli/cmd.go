@@ -13,7 +13,7 @@ type Cmd struct {
 	root       cobra.Command
 	welcomeStr string
 
-	children map[string]*Cmd
+	Children map[string]*Cmd
 
 	strMap    map[*string]string
 	boolMap   map[*bool]bool
@@ -33,7 +33,7 @@ func NewRootCmd(welcomeStr string) *Cmd {
 			},
 		},
 		welcomeStr: welcomeStr,
-		children:   make(map[string]*Cmd),
+		Children:   make(map[string]*Cmd),
 	}
 
 	return c
@@ -70,7 +70,7 @@ func (c *Cmd) NewSubCmd(name, short, long string, runHandler func(cmd *cobra.Com
 			Short: short,
 			Long:  long,
 		},
-		children: make(map[string]*Cmd),
+		Children: make(map[string]*Cmd),
 	}
 
 	sub.root.Run = func(cmd *cobra.Command, args []string) {
@@ -79,14 +79,10 @@ func (c *Cmd) NewSubCmd(name, short, long string, runHandler func(cmd *cobra.Com
 		sub.resetAllFlags()
 	}
 
-	c.children[sub.root.Use] = sub
+	c.Children[sub.root.Use] = sub
 	c.root.AddCommand(&sub.root)
 
 	return sub
-}
-
-func (c *Cmd) AddSubCmd(sub *Cmd) {
-	c.root.AddCommand(&sub.root)
 }
 
 func (c *Cmd) listen(rl *readline.Instance) {
