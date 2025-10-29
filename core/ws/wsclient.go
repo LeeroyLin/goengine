@@ -27,6 +27,7 @@ func NewWSClient(maxMsgBuffChanLen, workerPoolSize, maxWorkerTaskLen uint32, url
 		msgHandler:        NewWSMsgHandler(workerPoolSize, maxWorkerTaskLen),
 		connMgr:           NewWSConnManager(),
 		maxMsgBuffChanLen: maxMsgBuffChanLen,
+		workerPoolSize:    workerPoolSize,
 	}
 
 	return c
