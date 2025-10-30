@@ -20,6 +20,14 @@ type ConfBase struct {
 	ConfLogPattern
 }
 
+func NewConfBase() ConfBase {
+	return ConfBase{
+		Flags:            flags.NewFlags(),
+		ConfBasicPattern: ConfBasicPattern{},
+		ConfLogPattern:   ConfLogPattern{},
+	}
+}
+
 type ConfBasicPattern struct {
 	Name string // 名字
 	Desc string // 额外描述
@@ -39,6 +47,10 @@ type ConfHttpServicePattern struct {
 	HttpKeyFile  string
 }
 
+func NewConfHttpServicePattern() ConfHttpServicePattern {
+	return ConfHttpServicePattern{}
+}
+
 type ConfNetServicePattern struct {
 	IPVersion string // 主机ip版本：tcp,tcp4,tcp6
 	IP        string // 主机ip
@@ -53,8 +65,6 @@ type ConfNetServicePattern struct {
 
 // Setup 装载配置
 func (c *ConfBase) Setup(child interface{}, confFilePath string) {
-	c.Flags = flags.NewFlags()
-
 	// 加载配置文件
 	c.LoadFromFile(child, confFilePath)
 
