@@ -31,6 +31,14 @@ type ConfLogPattern struct {
 	LogDebug bool   // 开启日志调试
 }
 
+type ConfHttpServicePattern struct {
+	HttpIP       string // 主机ip
+	HttpPort     int    // 主机端口号
+	Https        bool
+	HttpCertFile string
+	HttpKeyFile  string
+}
+
 type ConfNetServicePattern struct {
 	IPVersion string // 主机ip版本：tcp,tcp4,tcp6
 	IP        string // 主机ip
