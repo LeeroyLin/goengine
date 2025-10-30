@@ -16,12 +16,31 @@ var buf bytes.Buffer
 
 type ConfBase struct {
 	Flags *flags.Flags
-	Name  string // 名字
-	Desc  string // 额外描述
+	ConfBasicPattern
+	ConfLogPattern
+}
 
+type ConfBasicPattern struct {
+	Name string // 名字
+	Desc string // 额外描述
+}
+
+type ConfLogPattern struct {
 	LogDir   string // 日志文件目录
 	LogFile  string // 日志文件名
 	LogDebug bool   // 开启日志调试
+}
+
+type ConfNetServicePattern struct {
+	IPVersion string // 主机ip版本：tcp,tcp4,tcp6
+	IP        string // 主机ip
+	Port      int    // 主机端口号
+
+	MaxConn           int    // 最大连接数
+	WorkerPoolSize    uint32 // 工作池数量
+	MaxWorkerTaskLen  uint32 // worker最大任务容量
+	MaxPacketSize     uint32 // 最大包长度
+	MaxMsgBuffChanLen uint32 // 最大消息队列通道容量
 }
 
 // Setup 装载配置
