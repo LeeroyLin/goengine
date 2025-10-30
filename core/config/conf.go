@@ -63,6 +63,10 @@ type ConfNetServicePattern struct {
 	MaxMsgBuffChanLen uint32 // 最大消息队列通道容量
 }
 
+func NewConfNetServicePattern() ConfNetServicePattern {
+	return ConfNetServicePattern{}
+}
+
 // Setup 装载配置
 func (c *ConfBase) Setup(child interface{}, confFilePath string) {
 	// 加载配置文件
