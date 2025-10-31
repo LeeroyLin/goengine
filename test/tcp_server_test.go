@@ -8,9 +8,12 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	c := &config.ConfBase{}
+	c := &Conf{
+		ConfBase:              config.NewConfBase(),
+		ConfNetServicePattern: config.NewConfNetServicePattern(),
+	}
 	c.Setup(c, "")
-	s := network.NewServer(c, network.NewDataPack(c.MaxPacketSize))
+	s := network.NewServer(&c.ConfNetServicePattern, network.NewDataPack(c.MaxPacketSize))
 
 	s.Start()
 

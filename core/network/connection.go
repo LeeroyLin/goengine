@@ -2,7 +2,6 @@ package network
 
 import (
 	"errors"
-	"github.com/LeeroyLin/goengine/core/config"
 	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/LeeroyLin/goengine/iface/inetwork"
 	"io"
@@ -283,7 +282,7 @@ func (c *Connection) finalizer() {
 }
 
 // NewConnection 创建连接的方法
-func NewConnection(conf *config.ConfBase, server inetwork.IServer, conn *net.TCPConn, connID uint32, msgHandler inetwork.IMsgHandler) inetwork.IConnection {
+func NewConnection(workerPoolSize, maxMsgBuffChanLen uint32, server inetwork.IServer, conn *net.TCPConn, connID uint32, msgHandler inetwork.IMsgHandler) inetwork.IConnection {
 	c := &Connection{
 		Server:            server,
 		conn:              conn,
@@ -293,8 +292,8 @@ func NewConnection(conf *config.ConfBase, server inetwork.IServer, conn *net.TCP
 		msgBuffChan:       nil,
 		property:          nil,
 		isClosed:          false,
-		workerPoolSize:    conf.WorkerPoolSize,
-		maxMsgBuffChanLen: conf.MaxMsgBuffChanLen,
+		workerPoolSize:    workerPoolSize,
+		maxMsgBuffChanLen: maxMsgBuffChanLen,
 	}
 
 	c.Server.GetConnMgr().Add(c)

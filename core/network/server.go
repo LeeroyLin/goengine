@@ -14,7 +14,7 @@ type Server struct {
 	IPVersion  string
 	IP         string
 	Port       int
-	conf       *config.ConfBase
+	conf       *config.ConfNetServicePattern
 	msgHandler inetwork.IMsgHandler
 	connMgr    inetwork.IConnManager
 	dataPack   inetwork.IDataPack
@@ -78,7 +78,7 @@ func (s *Server) Start() {
 				default:
 					AcceptDelay.Reset()
 
-					dealConn := NewConnection(s.conf, s, conn, cid, s.msgHandler)
+					dealConn := NewConnection(s.conf.WorkerPoolSize, s.conf.MaxMsgBuffChanLen, s, conn, cid, s.msgHandler)
 					cid++
 
 					dealConn.Start()
@@ -130,7 +130,7 @@ func (s *Server) RecycleId(connId uint32) {
 	s.idPool.Set(connId)
 }
 
-func NewServer(conf *config.ConfBase, dataPack inetwork.IDataPack) inetwork.IServer {
+func NewServer(conf *config.ConfNetServicePattern, dataPack inetwork.IDataPack) inetwork.IServer {
 	s := &Server{
 		IPVersion:  conf.IPVersion,
 		IP:         conf.IP,

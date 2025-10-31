@@ -16,7 +16,7 @@ type WSServer struct {
 	IP         string
 	Port       int
 	Url        string
-	conf       *config.ConfBase
+	conf       *config.ConfNetServicePattern
 	msgHandler iwebsocket.IWSMsgHandler
 	connMgr    iwebsocket.IWSConnManager
 	dataPack   inetwork.IDataPack
@@ -91,7 +91,7 @@ func (s *WSServer) RecycleId(connId uint32) {
 	s.idPool.Set(connId)
 }
 
-func NewWSServer(conf *config.ConfBase, dataPack inetwork.IDataPack) *WSServer {
+func NewWSServer(conf *config.ConfNetServicePattern, dataPack inetwork.IDataPack) *WSServer {
 	s := &WSServer{
 		IPVersion:  conf.IPVersion,
 		IP:         conf.IP,

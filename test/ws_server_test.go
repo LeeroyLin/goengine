@@ -21,10 +21,18 @@ func onMsg1(req iwebsocket.IWSRequest) {
 	}
 }
 
+type Conf struct {
+	config.ConfBase
+	config.ConfNetServicePattern
+}
+
 func TestWSServer(t *testing.T) {
-	c := &config.ConfBase{}
+	c := &Conf{
+		ConfBase:              config.NewConfBase(),
+		ConfNetServicePattern: config.NewConfNetServicePattern(),
+	}
 	c.Setup(c, "")
-	s := ws.NewWSServer(c, network.NewDataPack(c.MaxPacketSize))
+	s := ws.NewWSServer(&c.ConfNetServicePattern, network.NewDataPack(c.MaxPacketSize))
 
 	s.AddRouter(1, onMsg1)
 
