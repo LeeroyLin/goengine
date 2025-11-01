@@ -68,7 +68,10 @@ func (op DBBulkSaveOp) Exec(c *mongo.Collection) (interface{}, error) {
 
 		elog.Debug("[MongoDB] bulk save", i, buf.Len())
 
-		wm := mongo.NewReplaceOneModel().SetFilter(each.Filter).SetReplacement(buf.Bytes()).SetUpsert(true)
+		bytes := make([]byte, buf.Len())
+		copy(bytes, buf.Bytes())
+
+		wm := mongo.NewReplaceOneModel().SetFilter(each.Filter).SetReplacement(bytes).SetUpsert(true)
 		writeModels = append(writeModels, wm)
 
 		if bytesCnt >= DB_Op_BulkWriteSize {
