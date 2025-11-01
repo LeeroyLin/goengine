@@ -7,7 +7,7 @@ import (
 
 type DBOpEach struct {
 	Filter interface{}
-	Data   interface{}
+	Data   []byte
 }
 
 var DBBufferPool = pool.NewBufferPool(2048, 256)

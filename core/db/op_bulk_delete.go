@@ -8,7 +8,7 @@ import (
 // DBBulkDeleteOp 数据库批量删除操作
 type DBBulkDeleteOp struct {
 	DBOpBase
-	OpEachArr []*DBOpEach
+	Filters []interface{}
 }
 
 func NewDBBulkDeleteOp(fromModule, dbName, collName string) *DBBulkDeleteOp {
@@ -18,20 +18,21 @@ func NewDBBulkDeleteOp(fromModule, dbName, collName string) *DBBulkDeleteOp {
 			DBName:     dbName,
 			CollName:   collName,
 		},
+		Filters: make([]interface{}, 0),
 	}
 
 	return op
 }
 
 func (op DBBulkDeleteOp) Exec(c *mongo.Collection) (interface{}, error) {
-	cnt := len(op.OpEachArr)
+	cnt := len(op.Filters)
 
 	writeModels := make([]mongo.WriteModel, 0)
 
 	for i := 0; i < cnt; i++ {
-		each := op.OpEachArr[i]
+		filter := op.Filters[i]
 
-		wm := mongo.NewDeleteOneModel().SetFilter(each.Filter)
+		wm := mongo.NewDeleteOneModel().SetFilter(filter)
 		writeModels = append(writeModels, wm)
 	}
 

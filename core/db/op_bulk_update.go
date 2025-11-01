@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/LeeroyLin/goengine/core/elog"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsonrw"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -41,29 +39,10 @@ func (op DBBulkUpdateOp) Exec(c *mongo.Collection) (interface{}, error) {
 	var endIdxArr []int
 	bytesCnt := 0
 
-	buf := DBBufferPool.Get()
-	vm, err := bsonrw.NewBSONValueWriter(buf)
-
-	if err != nil {
-		return nil, err
-	}
-
-	enc, err := bson.NewEncoder(vm)
-
-	if err != nil {
-		return nil, err
-	}
-
 	for i := 0; i < cnt; i++ {
 		each := op.OpEachArr[i]
 
-		err = enc.Encode(each.Data)
-		if err != nil {
-			t := i
-			elog.Error("[MongoDB] bulk update encode err.", op.DBName, op.CollName, t, err)
-			continue
-		}
-		bytesCnt += buf.Len()
+		bytesCnt += len(each.Data)
 
 		wm := mongo.NewUpdateOneModel().SetFilter(each.Filter).SetUpdate(each.Data).SetUpsert(true)
 		writeModels = append(writeModels, wm)
@@ -82,7 +61,7 @@ func (op DBBulkUpdateOp) Exec(c *mongo.Collection) (interface{}, error) {
 
 	for _, endIdx := range endIdxArr {
 		ctx, cancel := context.WithTimeout(context.Background(), DB_Op_Timeout)
-		_, err = c.BulkWrite(ctx, writeModels[startIdx:endIdx])
+		_, err := c.BulkWrite(ctx, writeModels[startIdx:endIdx])
 		cancel()
 
 		elog.Debug("[MongoDB] bulk update split.", op.DBName, op.CollName, startIdx, endIdx)
