@@ -66,8 +66,6 @@ func (op DBBulkSaveOp) Exec(c *mongo.Collection) (interface{}, error) {
 		}
 		bytesCnt += buf.Len()
 
-		elog.Debug("[MongoDB] bulk save", i, buf.Len())
-
 		bytes := make([]byte, buf.Len())
 		copy(bytes, buf.Bytes())
 
