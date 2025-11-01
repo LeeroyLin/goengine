@@ -57,6 +57,7 @@ func (op DBBulkSaveOp) Exec(c *mongo.Collection) (interface{}, error) {
 	for i := 0; i < cnt; i++ {
 		each := op.OpEachArr[i]
 
+		buf.Reset()
 		err = enc.Encode(each.Data)
 		if err != nil {
 			t := i
@@ -65,7 +66,9 @@ func (op DBBulkSaveOp) Exec(c *mongo.Collection) (interface{}, error) {
 		}
 		bytesCnt += buf.Len()
 
-		wm := mongo.NewReplaceOneModel().SetFilter(each.Filter).SetReplacement(each.Data).SetUpsert(true)
+		elog.Debug("[MongoDB] bulk save", i, buf.Len())
+
+		wm := mongo.NewReplaceOneModel().SetFilter(each.Filter).SetReplacement(buf.Bytes()).SetUpsert(true)
 		writeModels = append(writeModels, wm)
 
 		if bytesCnt >= DB_Op_BulkWriteSize {

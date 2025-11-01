@@ -25,6 +25,7 @@ func (p *BufferPool) Get() *bytes.Buffer {
 		return b
 	default:
 		b := bytes.NewBuffer(p.bytesPool.Get())
+		b.Reset()
 		return b
 	}
 }
