@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/pool"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -42,9 +43,10 @@ func (op DBBulkUpdateOp) Exec(c *mongo.Collection) (interface{}, error) {
 	for i := 0; i < cnt; i++ {
 		each := op.OpEachArr[i]
 
-		bytesCnt += len(each.Data)
+		bytesCnt += each.DataBuffer.Len()
 
-		wm := mongo.NewUpdateOneModel().SetFilter(each.Filter).SetUpdate(each.Data).SetUpsert(true)
+		wm := mongo.NewUpdateOneModel().SetFilter(each.Filter).
+			SetUpdate(each.DataBuffer.AvailableBytes()).SetUpsert(true)
 		writeModels = append(writeModels, wm)
 
 		if bytesCnt >= DB_Op_BulkWriteSize {
@@ -71,6 +73,12 @@ func (op DBBulkUpdateOp) Exec(c *mongo.Collection) (interface{}, error) {
 		}
 
 		startIdx = endIdx
+	}
+
+	// 回收
+	for _, each := range op.OpEachArr {
+		pool.PFMBufferCtl.Set(each.DataBuffer)
+		each.DataBuffer = nil
 	}
 
 	return nil, nil

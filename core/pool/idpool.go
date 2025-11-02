@@ -10,7 +10,7 @@ type IdPool[T interface{}] struct {
 // NewIdPool 新建 Id池子
 //
 // parameters:
-// @max: 最大缓存个数
+// @cacheMax: 最大缓存个数
 // @getter: 获得实例的方法，传递生成下标
 func NewIdPool[T interface{}](max int64, getter func(idx int64) T) *IdPool[T] {
 	p := &IdPool[T]{

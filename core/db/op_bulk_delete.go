@@ -2,23 +2,24 @@ package db
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // DBBulkDeleteOp 数据库批量删除操作
 type DBBulkDeleteOp struct {
 	DBOpBase
-	Filters []interface{}
+	Filters []bson.M
 }
 
-func NewDBBulkDeleteOp(fromModule, dbName, collName string) *DBBulkDeleteOp {
+func NewDBBulkDeleteOp(fromModule, dbName, collName string, filters []bson.M) *DBBulkDeleteOp {
 	op := &DBBulkDeleteOp{
 		DBOpBase: DBOpBase{
 			FromModule: fromModule,
 			DBName:     dbName,
 			CollName:   collName,
 		},
-		Filters: make([]interface{}, 0),
+		Filters: filters,
 	}
 
 	return op
