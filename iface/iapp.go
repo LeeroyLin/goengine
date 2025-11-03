@@ -7,7 +7,8 @@ type IApp interface {
 	// Run 运行应用
 	//
 	// param successCb 启动成功时的回调
-	Run(successCb func())
+	// param finalCb 结束后的回调
+	Run(successCb func(), finalCb func())
 
 	// Stop 停止应用
 	Stop()

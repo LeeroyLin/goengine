@@ -25,7 +25,10 @@ func (c *SigCloser) Listen(final func()) {
 	for {
 		select {
 		case <-c.sigChan:
-			final()
+			close(c.CloseChan)
+			if final != nil {
+				final()
+			}
 			return
 		case <-c.CloseChan:
 			return

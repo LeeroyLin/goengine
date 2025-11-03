@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"fmt"
+	"github.com/LeeroyLin/goengine/core/closer"
 	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/LeeroyLin/goengine/core/module"
 	"github.com/LeeroyLin/goengine/core/rpc"
@@ -14,11 +15,11 @@ import (
 type App struct {
 	Name              string
 	Desc              string
-	closeChan         chan interface{} // 用于关闭的通道
 	preModuleGroup    *module.ModuleGroup
 	middleModuleGroup *module.ModuleGroup
 	AppHandler        iface.IAppHandler
 	msgChanCapacity   int // 模块间消息通道容量
+	closer            *closer.SigCloser
 	sync.RWMutex
 	RPC iface.IRPC
 }
@@ -30,6 +31,7 @@ func NewApp(name, desc string) *App {
 		Desc:            desc,
 		msgChanCapacity: 1024,
 		RPC:             rpc.NewRPC(),
+		closer:          closer.NewSigCloser(),
 	}
 
 	return a
@@ -42,19 +44,15 @@ func (a *App) Init(preModules, modules []iface.IModule) {
 		a.AppHandler.OnBeforeInit()
 	}
 
-	if a.closeChan == nil {
-		a.closeChan = make(chan interface{})
-	}
-
 	// 先运行PreModule
 	if preModules != nil && len(preModules) > 0 {
-		a.preModuleGroup = module.NewModuleGroup(a, a, a.msgChanCapacity, a.closeChan)
+		a.preModuleGroup = module.NewModuleGroup(a, a, a.msgChanCapacity, a.closer.CloseChan)
 		a.preModuleGroup.InitModules(preModules)
 		a.preModuleGroup.RunModules()
 	}
 
 	if modules != nil && len(modules) > 0 {
-		a.middleModuleGroup = module.NewModuleGroup(a, a, a.msgChanCapacity, a.closeChan)
+		a.middleModuleGroup = module.NewModuleGroup(a, a, a.msgChanCapacity, a.closer.CloseChan)
 
 		// 添加并初始化模块
 		a.middleModuleGroup.InitModules(modules)
@@ -68,7 +66,8 @@ func (a *App) Init(preModules, modules []iface.IModule) {
 // Run 运行应用
 //
 // param successCb 启动成功时的回调
-func (a *App) Run(successCb func()) {
+// param finalCb 结束后的回调
+func (a *App) Run(successCb func(), finalCb func()) {
 	elog.Info("[App] Run.", a.Name, a.Desc)
 
 	if a.AppHandler != nil {
@@ -92,20 +91,22 @@ func (a *App) Run(successCb func()) {
 		}
 
 		select {
-		case <-a.closeChan:
+		case <-a.closer.CloseChan:
 			a.doStop()
 			break
 		}
 	}()
+
+	a.closer.Listen(finalCb)
 }
 
 // Stop 停止应用
 func (a *App) Stop() {
 	select {
-	case <-a.closeChan:
+	case <-a.closer.CloseChan:
 		return
 	default:
-		close(a.closeChan)
+		a.closer.Close()
 	}
 }
 
