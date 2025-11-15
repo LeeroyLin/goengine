@@ -84,16 +84,24 @@ func (e *ETCD) Stop() {
 }
 
 func (e *ETCD) Put(key, value string) error {
-	_, err := e.client.Put(context.Background(), key, value, clientv3.WithLease(e.leaseId))
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	_, err := e.client.Put(ctx, key, value, clientv3.WithLease(e.leaseId))
+	cancel()
 	return err
 }
 
 func (e *ETCD) Get(key string) (*clientv3.GetResponse, error) {
-	return e.client.Get(context.Background(), key)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	resp, err := e.client.Get(ctx, key)
+	cancel()
+
+	return resp, err
 }
 
 func (e *ETCD) Delete(key string) error {
-	_, err := e.client.Delete(context.Background(), key)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	_, err := e.client.Delete(ctx, key)
+	cancel()
 	return err
 }
 
@@ -104,7 +112,9 @@ func (e *ETCD) Watch(key string, handler func(evt *clientv3.Event)) {
 			return
 		}
 
-		watchChan := e.client.Watch(context.Background(), key)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		watchChan := e.client.Watch(ctx, key)
+		cancel()
 		e.RUnlock()
 
 		for {
@@ -135,8 +145,12 @@ func (e *ETCD) doClose() {
 }
 
 func (e *ETCD) createLease() {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
 	// 创建租约
-	leaseResp, err := e.client.Grant(context.Background(), e.ttl)
+	leaseResp, err := e.client.Grant(ctx, e.ttl)
+	cancel()
+
 	if err != nil {
 		elog.Error("[ETCD] create lease failed. err:", err)
 		return
@@ -149,14 +163,18 @@ func (e *ETCD) createLease() {
 		select {
 		case <-e.closeChan:
 			// 取消租约
-			_, err := e.client.Revoke(context.Background(), e.leaseId)
+			ctx, cancel = context.WithTimeout(context.Background(), 3*time.Second)
+			_, err := e.client.Revoke(ctx, e.leaseId)
+			cancel()
 			if err != nil {
 				elog.Fatal("[ETCD] revoke lease failed. err:", err)
 			}
 			return
 		case <-ticker.C:
 			// 续租
-			_, err := e.client.KeepAliveOnce(context.Background(), e.leaseId)
+			ctx, cancel = context.WithTimeout(context.Background(), 3*time.Second)
+			_, err := e.client.KeepAliveOnce(ctx, e.leaseId)
+			cancel()
 			if err != nil {
 				elog.Error("[ETCD] keep alive failed. err:", err)
 			}
