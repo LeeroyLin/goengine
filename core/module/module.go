@@ -10,6 +10,7 @@ type Module struct {
 	name       string
 	msgCenter  iface.IMsgCenter // 模块内的消息中心
 	rpcGetter  iface.IRPCGetter
+	etcdGetter iface.IETCDGetter
 	dispatcher iface.IDispatcher // 模块间消息分发器
 	mgrs       []iface.IMgr      // 管理器
 	life       iface.IModuleLife
@@ -42,9 +43,10 @@ func (m *Module) GetDispatcher() iface.IDispatcher {
 	return m.dispatcher
 }
 
-func (m *Module) DoInit(dispatcher iface.IDispatcher, rpcGetter iface.IRPCGetter, msgChanCapacity int, closeChan chan interface{}) {
+func (m *Module) DoInit(dispatcher iface.IDispatcher, rpcGetter iface.IRPCGetter, etcdGetter iface.IETCDGetter, msgChanCapacity int, closeChan chan interface{}) {
 	m.dispatcher = dispatcher
 	m.rpcGetter = rpcGetter
+	m.etcdGetter = etcdGetter
 	m.msgCenter = msgcenter.NewMsgCenter(m.name, msgChanCapacity, closeChan)
 
 	m.life.OnInit()
@@ -83,6 +85,8 @@ func (m *Module) DoStop() error {
 func (m *Module) GetRPC() iface.IRPC {
 	return m.rpcGetter.GetRPC()
 }
+
+func (m *Module) GetETCD() iface.IETCD { return m.etcdGetter.GetETCD() }
 
 // addMgrs 添加管理器
 func (m *Module) addMgrs(mgrs []iface.IMgr) {

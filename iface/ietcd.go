@@ -12,3 +12,7 @@ type IETCD interface {
 	Delete(key string) error
 	Watch(key string, handler func(evt *clientv3.Event))
 }
+
+type IETCDGetter interface {
+	GetETCD() IETCD
+}
