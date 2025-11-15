@@ -1,6 +1,6 @@
 package iface
 
-import "github.com/coreos/etcd/clientv3"
+import "go.etcd.io/etcd/clientv3"
 
 type IETCD interface {
 	GetClient() *clientv3.Client
