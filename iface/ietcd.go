@@ -4,8 +4,8 @@ import "github.com/coreos/etcd/clientv3"
 
 type IETCD interface {
 	GetClient() *clientv3.Client
-	RunDefault(endpoints []string, ttl int64, action func())
-	RunWithConfig(endpoints []string, ttl int64, cfg clientv3.Config, action func())
+	RunDefault(endpoints []string, ttl int64) error
+	RunWithConfig(endpoints []string, ttl int64, cfg clientv3.Config) error
 	Stop()
 	Put(key, value string) error
 	Get(key string) (*clientv3.GetResponse, error)

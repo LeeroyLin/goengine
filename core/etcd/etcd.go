@@ -30,73 +30,47 @@ func (e *ETCD) GetClient() *clientv3.Client {
 	return e.client
 }
 
-func (e *ETCD) RunDefault(endpoints []string, ttl int64, action func()) {
+func (e *ETCD) RunDefault(endpoints []string, ttl int64) error {
 	e.endpoints = endpoints
 	e.ttl = ttl
 
-	go func() {
-		e.Lock()
+	var err error
+	e.client, err = clientv3.New(clientv3.Config{
+		Endpoints:   e.endpoints,
+		DialTimeout: 5 * time.Second,
+	})
 
-		var err error
-		e.client, err = clientv3.New(clientv3.Config{
-			Endpoints:   e.endpoints,
-			DialTimeout: 5 * time.Second,
-		})
+	if err != nil {
+		elog.Error("[ECTD] Run etcd failed. err:", err)
+		return err
+	}
 
-		e.Unlock()
+	elog.Info("[ETCD] run default success.")
 
-		if err != nil {
-			elog.Error("[ECTD] Run etcd failed. err:", err)
-			return
-		}
+	// 创建租约
+	go e.createLease()
 
-		elog.Info("[ETCD] run default success.")
-
-		action()
-
-		// 创建租约
-		go e.createLease()
-
-		for {
-			select {
-			case <-e.closeChan:
-				return
-			}
-		}
-	}()
+	return nil
 }
 
-func (e *ETCD) RunWithConfig(endpoints []string, ttl int64, cfg clientv3.Config, action func()) {
+func (e *ETCD) RunWithConfig(endpoints []string, ttl int64, cfg clientv3.Config) error {
 	e.endpoints = endpoints
 	e.ttl = ttl
 
-	go func() {
-		e.Lock()
+	var err error
+	e.client, err = clientv3.New(cfg)
 
-		var err error
-		e.client, err = clientv3.New(cfg)
+	if err != nil {
+		elog.Error("[ECTD] Run etcd failed. err:", err)
+		return err
+	}
 
-		e.Unlock()
+	elog.Info("[ETCD] run with config success.")
 
-		if err != nil {
-			elog.Error("[ECTD] Run etcd failed. err:", err)
-			return
-		}
+	// 创建租约
+	go e.createLease()
 
-		elog.Info("[ETCD] run with config success.")
-
-		action()
-
-		// 创建租约
-		go e.createLease()
-
-		for {
-			select {
-			case <-e.closeChan:
-				return
-			}
-		}
-	}()
+	return nil
 }
 
 func (e *ETCD) Stop() {
