@@ -9,17 +9,19 @@ import (
 type ModuleGroup struct {
 	modules         map[string]iface.IModule // 所有模块
 	rpcGetter       iface.IRPCGetter
+	etcdGetter      iface.IETCDGetter
 	dispatcher      iface.IDispatcher
 	msgChanCapacity int
 	closeChan       chan interface{}
 	wg              *sync.WaitGroup // 等待组
 }
 
-func NewModuleGroup(dispatcher iface.IDispatcher, rpcGetter iface.IRPCGetter, msgChanCapacity int, closeChan chan interface{}) *ModuleGroup {
+func NewModuleGroup(dispatcher iface.IDispatcher, rpcGetter iface.IRPCGetter, etcdGetter iface.IETCDGetter, msgChanCapacity int, closeChan chan interface{}) *ModuleGroup {
 	g := &ModuleGroup{
 		modules:         make(map[string]iface.IModule),
 		dispatcher:      dispatcher,
 		rpcGetter:       rpcGetter,
+		etcdGetter:      etcdGetter,
 		msgChanCapacity: msgChanCapacity,
 		closeChan:       closeChan,
 		wg:              &sync.WaitGroup{},
@@ -37,7 +39,7 @@ func (g *ModuleGroup) InitModules(modules []iface.IModule) {
 
 	// 初始化模块，添加之后统一调用
 	for _, m := range g.modules {
-		m.DoInit(g.dispatcher, g.rpcGetter, g.msgChanCapacity, g.closeChan)
+		m.DoInit(g.dispatcher, g.rpcGetter, g.etcdGetter, g.msgChanCapacity, g.closeChan)
 	}
 }
 
