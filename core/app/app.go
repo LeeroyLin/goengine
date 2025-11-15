@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/LeeroyLin/goengine/core/closer"
 	"github.com/LeeroyLin/goengine/core/elog"
+	"github.com/LeeroyLin/goengine/core/etcd"
 	"github.com/LeeroyLin/goengine/core/module"
 	"github.com/LeeroyLin/goengine/core/rpc"
 	"github.com/LeeroyLin/goengine/iface"
@@ -21,7 +22,8 @@ type App struct {
 	msgChanCapacity   int // 模块间消息通道容量
 	closer            *closer.SigCloser
 	sync.RWMutex
-	RPC iface.IRPC
+	RPC  iface.IRPC
+	ETCD iface.IETCD
 }
 
 // NewApp 返回一个初始化的App
@@ -31,6 +33,7 @@ func NewApp(name, desc string) *App {
 		Desc:            desc,
 		msgChanCapacity: 1024,
 		RPC:             rpc.NewRPC(),
+		ETCD:            etcd.NewETCD(),
 		closer:          closer.NewSigCloser(),
 	}
 
