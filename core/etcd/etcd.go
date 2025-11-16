@@ -31,8 +31,8 @@ func (e *ETCD) GetClient() *clientv3.Client {
 	return e.client
 }
 
-func (e *ETCD) Run(endpoints []string, ttl int64, cfg clientv3.Config, connCb func()) error {
-	e.endpoints = endpoints
+func (e *ETCD) Run(ttl int64, cfg clientv3.Config, connCb func()) error {
+	e.endpoints = cfg.Endpoints
 	e.ttl = ttl
 	e.connCb = connCb
 
