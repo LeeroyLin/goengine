@@ -4,8 +4,7 @@ import clientv3 "go.etcd.io/etcd/client/v3"
 
 type IETCD interface {
 	GetClient() *clientv3.Client
-	RunDefault(endpoints []string, ttl int64) error
-	RunWithConfig(endpoints []string, ttl int64, cfg clientv3.Config) error
+	Run(endpoints []string, ttl int64, cfg clientv3.Config, connCb func()) error
 	Stop()
 	Put(key, value string) error
 	Get(key string) (*clientv3.GetResponse, error)

@@ -16,6 +16,7 @@ type ETCD struct {
 	closeChan chan interface{}
 	ttl       int64
 	sync.RWMutex
+	connCb func()
 }
 
 func NewETCD() iface.IETCD {
@@ -30,32 +31,10 @@ func (e *ETCD) GetClient() *clientv3.Client {
 	return e.client
 }
 
-func (e *ETCD) RunDefault(endpoints []string, ttl int64) error {
+func (e *ETCD) Run(endpoints []string, ttl int64, cfg clientv3.Config, connCb func()) error {
 	e.endpoints = endpoints
 	e.ttl = ttl
-
-	var err error
-	e.client, err = clientv3.New(clientv3.Config{
-		Endpoints:   e.endpoints,
-		DialTimeout: 5 * time.Second,
-	})
-
-	if err != nil {
-		elog.Error("[ECTD] Run etcd failed. err:", err)
-		return err
-	}
-
-	elog.Info("[ETCD] run default success.")
-
-	// 创建租约
-	go e.createLease()
-
-	return nil
-}
-
-func (e *ETCD) RunWithConfig(endpoints []string, ttl int64, cfg clientv3.Config) error {
-	e.endpoints = endpoints
-	e.ttl = ttl
+	e.connCb = connCb
 
 	var err error
 	e.client, err = clientv3.New(cfg)
@@ -65,7 +44,7 @@ func (e *ETCD) RunWithConfig(endpoints []string, ttl int64, cfg clientv3.Config)
 		return err
 	}
 
-	elog.Info("[ETCD] run with config success.")
+	elog.Info("[ETCD] init success.")
 
 	// 创建租约
 	go e.createLease()
@@ -144,26 +123,53 @@ func (e *ETCD) doClose() {
 	}
 }
 
+// 创建租约
 func (e *ETCD) createLease() {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ETCDDelay.Reset()
 
-	// 创建租约
-	leaseResp, err := e.client.Grant(ctx, e.ttl)
-	cancel()
+	for {
+		select {
+		case <-e.closeChan:
+			return
+		default:
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			// 创建租约
+			leaseResp, err := e.client.Grant(ctx, e.ttl)
+			cancel()
 
-	if err != nil {
-		elog.Error("[ETCD] create lease failed. err:", err)
-		return
+			if err != nil {
+				elog.Error("[ETCD] create lease failed. retry later. err:", err)
+				ETCDDelay.Delay()
+				continue
+			}
+
+			elog.Info("[ETCD] create lease success.")
+			e.leaseId = leaseResp.ID
+
+			e.RLock()
+			cb := e.connCb
+			e.RUnlock()
+			if cb != nil {
+				cb()
+			}
+
+			// 开始续租
+			e.startKeepAlive()
+
+			ETCDDelay.Reset()
+		}
 	}
-	e.leaseId = leaseResp.ID
+}
 
+// 开始续租
+func (e *ETCD) startKeepAlive() {
 	ticker := time.NewTicker(time.Duration(e.ttl-5) * time.Second)
 
 	for {
 		select {
 		case <-e.closeChan:
 			// 取消租约
-			ctx, cancel = context.WithTimeout(context.Background(), 3*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			_, err := e.client.Revoke(ctx, e.leaseId)
 			cancel()
 			if err != nil {
@@ -172,11 +178,12 @@ func (e *ETCD) createLease() {
 			return
 		case <-ticker.C:
 			// 续租
-			ctx, cancel = context.WithTimeout(context.Background(), 3*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			_, err := e.client.KeepAliveOnce(ctx, e.leaseId)
 			cancel()
 			if err != nil {
 				elog.Error("[ETCD] keep alive failed. err:", err)
+				return
 			}
 		}
 	}
