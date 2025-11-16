@@ -62,23 +62,23 @@ func (e *ETCD) Stop() {
 	}
 }
 
-func (e *ETCD) Put(key, value string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+func (e *ETCD) Put(key, value string, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	_, err := e.client.Put(ctx, key, value, clientv3.WithLease(e.leaseId))
 	cancel()
 	return err
 }
 
-func (e *ETCD) Get(key string) (*clientv3.GetResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+func (e *ETCD) Get(key string, timeout time.Duration) (*clientv3.GetResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	resp, err := e.client.Get(ctx, key)
 	cancel()
 
 	return resp, err
 }
 
-func (e *ETCD) Delete(key string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+func (e *ETCD) Delete(key string, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	_, err := e.client.Delete(ctx, key)
 	cancel()
 	return err
@@ -86,15 +86,14 @@ func (e *ETCD) Delete(key string) error {
 
 func (e *ETCD) Watch(key string, handler func(evt *clientv3.Event)) {
 	go func() {
-		e.RLock()
-		if e.client == nil {
+		select {
+		case <-e.closeChan:
 			return
+		default:
+			break
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-		watchChan := e.client.Watch(ctx, key)
-		cancel()
-		e.RUnlock()
+		watchChan := e.client.Watch(context.Background(), key)
 
 		for {
 			select {
