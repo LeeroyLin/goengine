@@ -129,6 +129,7 @@ func (a *App) doStop() {
 		}
 
 		a.RPC.ClearAll()
+		a.ETCD.Stop()
 
 		if a.AppHandler != nil {
 			a.AppHandler.OnAfterStop()

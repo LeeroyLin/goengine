@@ -9,10 +9,11 @@ type IETCD interface {
 	GetClient() *clientv3.Client
 	Run(ttl int64, cfg clientv3.Config, connCb func()) error
 	Stop()
-	Put(key, value string, timeout time.Duration) error
-	Get(key string, timeout time.Duration) (*clientv3.GetResponse, error)
-	Delete(key string, timeout time.Duration) error
+	Put(key, value string, timeout time.Duration, opts ...clientv3.OpOption) error
+	Get(key string, timeout time.Duration, opts ...clientv3.OpOption) (*clientv3.GetResponse, error)
+	Delete(key string, timeout time.Duration, opts ...clientv3.OpOption) error
 	Watch(key string, handler func(evt *clientv3.Event))
+	StartTick(duration time.Duration, handler func())
 }
 
 type IETCDGetter interface {
