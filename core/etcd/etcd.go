@@ -95,7 +95,7 @@ func (e *ETCD) Delete(key string, timeout time.Duration, opts ...clientv3.OpOpti
 	return err
 }
 
-func (e *ETCD) Watch(key string, handler func(evt *clientv3.Event)) {
+func (e *ETCD) Watch(key string, handler func(evt *clientv3.Event), opts ...clientv3.OpOption) {
 	go func() {
 		delay := NewETCDWatchDelay()
 
@@ -104,7 +104,7 @@ func (e *ETCD) Watch(key string, handler func(evt *clientv3.Event)) {
 			case <-e.closeChan:
 				return
 			default:
-				watchChan := e.client.Watch(context.Background(), key)
+				watchChan := e.client.Watch(context.Background(), key, opts...)
 
 				select {
 				case <-e.closeChan:
