@@ -13,6 +13,7 @@ type IETCD interface {
 	Get(key string, timeout time.Duration, opts ...clientv3.OpOption) (*clientv3.GetResponse, error)
 	Delete(key string, timeout time.Duration, opts ...clientv3.OpOption) error
 	Watch(key string, handler func(evt *clientv3.Event), opts ...clientv3.OpOption)
+	WithLease() clientv3.OpOption
 }
 
 type IETCDGetter interface {

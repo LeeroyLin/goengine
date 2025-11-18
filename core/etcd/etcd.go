@@ -64,20 +64,10 @@ func (e *ETCD) Stop() {
 
 func (e *ETCD) Put(key, value string, timeout time.Duration, opts ...clientv3.OpOption) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	_, err := e.client.Put(ctx, key, value, opts...)
+	cancel()
 
-	if len(opts) > 0 {
-		allOpts := []clientv3.OpOption{clientv3.WithLease(e.leaseId)}
-		allOpts = append(allOpts, opts...)
-		_, err := e.client.Put(ctx, key, value, allOpts...)
-		cancel()
-
-		return err
-
-	} else {
-		_, err := e.client.Put(ctx, key, value)
-		cancel()
-		return err
-	}
+	return err
 }
 
 func (e *ETCD) Get(key string, timeout time.Duration, opts ...clientv3.OpOption) (*clientv3.GetResponse, error) {
@@ -128,6 +118,10 @@ func (e *ETCD) Watch(key string, handler func(evt *clientv3.Event), opts ...clie
 			}
 		}
 	}()
+}
+
+func (a *ETCD) WithLease() clientv3.OpOption {
+	return clientv3.WithLease(a.leaseId)
 }
 
 func (e *ETCD) doClose() {
