@@ -97,39 +97,37 @@ func (e *ETCD) Delete(key string, timeout time.Duration, opts ...clientv3.OpOpti
 
 func (e *ETCD) Watch(key string, handler func(evt *clientv3.Event)) {
 	go func() {
-		select {
-		case <-e.closeChan:
-			return
-		default:
-			break
-		}
-
-		watchChan := e.client.Watch(context.Background(), key)
+		delay := NewETCDWatchDelay()
 
 		for {
 			select {
 			case <-e.closeChan:
 				return
-			case resp := <-watchChan:
-				for _, event := range resp.Events {
-					handler(event)
+			default:
+				watchChan := e.client.Watch(context.Background(), key)
+
+				select {
+				case <-e.closeChan:
+					return
+				case resp, ok := <-watchChan:
+					if !ok {
+						elog.Error("[ETCD] channel closed.")
+						break
+					}
+					if resp.Err() != nil {
+						elog.Error("[ETCD] watch err.", resp.Err())
+						break
+					}
+					for _, event := range resp.Events {
+						handler(event)
+					}
+					delay.Reset()
 				}
+
+				delay.Delay()
 			}
 		}
 	}()
-}
-
-func (e *ETCD) StartTick(duration time.Duration, handler func()) {
-	ticker := time.NewTicker(duration)
-
-	for {
-		select {
-		case <-e.closeChan:
-			return
-		case <-ticker.C:
-			handler()
-		}
-	}
 }
 
 func (e *ETCD) doClose() {
@@ -148,7 +146,7 @@ func (e *ETCD) doClose() {
 
 // 创建租约
 func (e *ETCD) createLease() {
-	ETCDDelay.Reset()
+	ETCDLeaseDelay.Reset()
 
 	for {
 		select {
@@ -162,24 +160,21 @@ func (e *ETCD) createLease() {
 
 			if err != nil {
 				elog.Error("[ETCD] create lease failed. retry later. err:", err)
-				ETCDDelay.Delay()
+				ETCDLeaseDelay.Delay()
 				continue
 			}
 
 			elog.Info("[ETCD] create lease success.")
 			e.leaseId = leaseResp.ID
 
-			e.RLock()
-			cb := e.connCb
-			e.RUnlock()
-			if cb != nil {
-				cb()
+			if e.connCb != nil {
+				e.connCb()
 			}
 
 			// 开始续租
 			e.startKeepAlive()
 
-			ETCDDelay.Reset()
+			ETCDLeaseDelay.Reset()
 		}
 	}
 }
@@ -192,7 +187,7 @@ func (e *ETCD) startKeepAlive() {
 		select {
 		case <-e.closeChan:
 			// 取消租约
-			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			_, err := e.client.Revoke(ctx, e.leaseId)
 			cancel()
 			if err != nil {
@@ -201,7 +196,7 @@ func (e *ETCD) startKeepAlive() {
 			return
 		case <-ticker.C:
 			// 续租
-			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			_, err := e.client.KeepAliveOnce(ctx, e.leaseId)
 			cancel()
 			if err != nil {
