@@ -96,22 +96,32 @@ func (e *ETCD) Watch(key string, handler func(evt *clientv3.Event), opts ...clie
 			default:
 				watchChan := e.client.Watch(context.Background(), key, opts...)
 
-				select {
-				case <-e.closeChan:
-					return
-				case resp, ok := <-watchChan:
-					if !ok {
-						elog.Error("[ETCD] channel closed.")
+				for {
+					reWatch := false
+
+					select {
+					case <-e.closeChan:
+						return
+					case resp, ok := <-watchChan:
+						if !ok {
+							elog.Error("[ETCD] channel closed.")
+							reWatch = true
+							break
+						}
+						if resp.Err() != nil {
+							elog.Error("[ETCD] watch err.", resp.Err())
+							reWatch = true
+							break
+						}
+						for _, event := range resp.Events {
+							handler(event)
+						}
+						delay.Reset()
+					}
+
+					if reWatch {
 						break
 					}
-					if resp.Err() != nil {
-						elog.Error("[ETCD] watch err.", resp.Err())
-						break
-					}
-					for _, event := range resp.Events {
-						handler(event)
-					}
-					delay.Reset()
 				}
 
 				delay.Delay()
