@@ -68,9 +68,10 @@ func NewConfNetServicePattern() ConfNetServicePattern {
 }
 
 type ConfETCDPattern struct {
-	ETCDServerId  string
-	ETCDEndpoints []string
-	ETCDTTL       int64
+	ETCDServerId     string
+	ETCDEndpoints    []string
+	ETCDTTL          int64
+	ETCDExternalAddr string
 }
 
 func NewConfETCDPattern() ConfETCDPattern {
