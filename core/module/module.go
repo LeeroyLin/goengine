@@ -14,6 +14,7 @@ type Module struct {
 	dispatcher iface.IDispatcher // 模块间消息分发器
 	mgrs       []iface.IMgr      // 管理器
 	life       iface.IModuleLife
+	CloseChan  chan interface{}
 }
 
 func NewModule(name string) Module {
@@ -48,6 +49,7 @@ func (m *Module) DoInit(dispatcher iface.IDispatcher, rpcGetter iface.IRPCGetter
 	m.rpcGetter = rpcGetter
 	m.etcdGetter = etcdGetter
 	m.msgCenter = msgcenter.NewMsgCenter(m.name, msgChanCapacity, closeChan)
+	m.CloseChan = closeChan
 
 	m.life.OnInit()
 
