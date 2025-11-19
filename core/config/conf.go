@@ -67,6 +67,15 @@ func NewConfNetServicePattern() ConfNetServicePattern {
 	return ConfNetServicePattern{}
 }
 
+type ConfETCDPattern struct {
+	ETCDEndpoints []string
+	ETCDTTL       int64
+}
+
+func NewConfETCDPattern() ConfETCDPattern {
+	return ConfETCDPattern{}
+}
+
 // Setup 装载配置
 func (c *ConfBase) Setup(child interface{}, confFilePath string) {
 	// 加载配置文件
