@@ -41,8 +41,8 @@ func (b *PFMBuffer) Write(p []byte) (int, error) {
 	}
 
 	for i := 0; i < l; i++ {
-		if i+b.offset < len(b.buf) {
-			b.buf[i+b.offset] = p[i]
+		if b.offset < len(b.buf) {
+			b.buf[b.offset] = p[i]
 		} else {
 			b.buf = append(b.buf, p[i])
 		}
@@ -83,8 +83,8 @@ func (b *PFMBuffer) WriteUtil(p []byte, l int) error {
 	}
 
 	for i := 0; i < l; i++ {
-		if i+b.offset < len(b.buf) {
-			b.buf[i+b.offset] = p[i]
+		if b.offset < len(b.buf) {
+			b.buf[b.offset] = p[i]
 		} else {
 			b.buf = append(b.buf, p[i])
 		}
