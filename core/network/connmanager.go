@@ -25,9 +25,14 @@ func (cm *ConnManager) Get(connId uint32) (inetwork.IConnection, bool) {
 	return cm.connections.Get(connId)
 }
 
-// Size 获得当前连接数
-func (cm *ConnManager) Size() int {
-	return cm.connections.Size()
+// Count 获得当前连接数（精准，但效率很低）
+func (cm *ConnManager) Count() int {
+	return cm.connections.Count()
+}
+
+// WeakCount 获得当前连接数（非精准）
+func (cm *ConnManager) WeakCount() int {
+	return int(cm.connections.WeakCount())
 }
 
 // Remove 移除连接

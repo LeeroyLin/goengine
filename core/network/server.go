@@ -48,7 +48,7 @@ func (s *Server) Start() {
 		go func() {
 			for {
 				// 如果连接数达上限
-				if s.GetConnMgr().Size() >= s.conf.MaxConn {
+				if s.GetConnMgr().WeakCount() >= s.conf.MaxConn {
 					// 延时
 					AcceptDelay.Delay()
 					continue

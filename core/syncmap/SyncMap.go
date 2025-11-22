@@ -1,23 +1,38 @@
 package syncmap
 
-import "sync"
+import (
+	"sync"
+	"sync/atomic"
+)
 
 type SyncMap[K interface{}, V interface{}] struct {
-	m *sync.Map
+	m         *sync.Map
+	weakCount atomic.Int32 // 不严格计数，短时间窗口计数会有错误
 }
 
 func NewSyncMap[K interface{}, V interface{}]() *SyncMap[K, V] {
 	return &SyncMap[K, V]{
-		m: &sync.Map{},
+		m:         &sync.Map{},
+		weakCount: atomic.Int32{},
 	}
 }
 
 func (sm *SyncMap[K, V]) Add(key K, value V) {
-	sm.m.Store(key, value)
+	_, present := sm.m.Swap(key, value)
+
+	// 没有旧值，是新增
+	if !present {
+		sm.weakCount.Add(1)
+	}
 }
 
 func (sm *SyncMap[K, V]) Delete(key K) {
-	sm.m.Delete(key)
+	_, present := sm.m.LoadAndDelete(key)
+
+	// 之前有值
+	if present {
+		sm.weakCount.Add(-1)
+	}
 }
 
 func (sm *SyncMap[K, V]) Get(key K) (V, bool) {
@@ -33,6 +48,7 @@ func (sm *SyncMap[K, V]) Get(key K) (V, bool) {
 
 func (sm *SyncMap[K, V]) Clear() {
 	sm.m.Clear()
+	sm.weakCount.Store(0)
 }
 
 func (sm *SyncMap[K, V]) Range(f func(key K, value V) bool) {
@@ -41,7 +57,8 @@ func (sm *SyncMap[K, V]) Range(f func(key K, value V) bool) {
 	})
 }
 
-func (sm *SyncMap[K, V]) Size() int {
+// Count 真实尺寸，会遍历，效率低
+func (sm *SyncMap[K, V]) Count() int {
 	size := 0
 	sm.m.Range(func(key, value any) bool {
 		size++
@@ -50,6 +67,11 @@ func (sm *SyncMap[K, V]) Size() int {
 	})
 
 	return size
+}
+
+// WeakCount 弱计数，短时间窗口内不太准确，大致反应数量
+func (sm *SyncMap[K, V]) WeakCount() int32 {
+	return sm.weakCount.Load()
 }
 
 func (sm *SyncMap[K, V]) GetAndDelete(key K) (value V, loaded bool) {

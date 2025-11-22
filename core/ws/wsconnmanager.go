@@ -25,9 +25,14 @@ func (cm *WSConnManager) Get(connId uint32) (iwebsocket.IWSConnection, bool) {
 	return cm.connections.Get(connId)
 }
 
-// Size 获得当前连接数
-func (cm *WSConnManager) Size() int {
-	return cm.connections.Size()
+// Count 获得当前连接数（精准，但效率很低）
+func (cm *WSConnManager) Count() int {
+	return cm.connections.Count()
+}
+
+// WeakCount 获得当前连接数（非精准）
+func (cm *WSConnManager) WeakCount() int {
+	return int(cm.connections.WeakCount())
 }
 
 // Remove 移除连接
