@@ -79,7 +79,7 @@ func NewConfETCDPattern() ConfETCDPattern {
 }
 
 type ConfRPCServerPattern struct {
-	RPCListenAddr   int    // rpc监听地址
+	RPCListenAddr   string // rpc监听地址
 	RPCExternalAddr string // 对外暴露rpc地址
 }
 
