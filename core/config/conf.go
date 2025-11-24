@@ -78,6 +78,15 @@ func NewConfETCDPattern() ConfETCDPattern {
 	return ConfETCDPattern{}
 }
 
+type ConfRPCServerPattern struct {
+	RPCPort         int    // rpc监听端口
+	RPCExternalAddr string // 对外暴露rpc地址
+}
+
+func NewConfRPCServerPattern() ConfRPCServerPattern {
+	return ConfRPCServerPattern{}
+}
+
 // Setup 装载配置
 func (c *ConfBase) Setup(child interface{}, confFilePath string) {
 	// 加载配置文件
