@@ -6,38 +6,26 @@ import (
 	"path/filepath"
 )
 
-// GetRootDir 获得项目根目录
-func GetRootDir() (string, error) {
+// GetPathFromParent 从逐级父目录获取是否存在目标目录
+func GetPathFromParent(targetPath string) (string, error) {
 	// 获得当前工作目录
 	dir, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
 
-	// 向上递归查找go.mod文件
+	// 向上递归查找
 	for {
-		// 检查当前目录是否存在go.mod
-		modPath := filepath.Join(dir, "go.mod")
-		if _, err := os.Stat(modPath); err == nil {
-			return dir, nil
+		// 检查当前目录是否存在
+		nPath := filepath.Join(dir, targetPath)
+		if _, err := os.Stat(nPath); err == nil {
+			return nPath, nil
 		}
 
-		// 到达文件系统根目录仍未找到
 		parentDir := filepath.Dir(dir)
 		if parentDir == dir { // 已经到达根目录
-			return "", errors.New("can not find go.mod file")
+			return "", errors.New("can not find path")
 		}
 		dir = parentDir
 	}
-}
-
-// GetRootRelPath 获得相对于项目根目录的路径
-func GetRootRelPath(relPath string) (string, error) {
-	rootDir, err := GetRootDir()
-
-	if err != nil {
-		return "", err
-	}
-
-	return rootDir + "/" + relPath, nil
 }
