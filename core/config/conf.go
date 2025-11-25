@@ -180,12 +180,10 @@ func (c *ConfBase) initFlags(child interface{}) {
 		} else if kind == reflect.Uint32 {
 			c.Flags.SetUInt32(lowerName, fieldValue.(uint32), fieldName)
 		} else if kind == reflect.Struct {
-			if typeField.Type == reflect.TypeOf(ConfBase{}) {
-				if valField.CanSet() {
-					ptr := valField.Addr().Interface().(*ConfBase)
+			if valField.CanSet() {
+				ptr := valField.Addr().Interface()
 
-					c.initFlags(ptr)
-				}
+				c.initFlags(ptr)
 			}
 		}
 	}
@@ -242,12 +240,10 @@ func (c *ConfBase) parseFlags(child interface{}) {
 			v, _ := c.Flags.GetUInt32(lowerName, fieldValue.(uint32))
 			valField.SetUint(uint64(v))
 		} else if kind == reflect.Struct {
-			if typeField.Type == reflect.TypeOf(ConfBase{}) {
-				if valField.CanSet() {
-					ptr := valField.Addr().Interface().(*ConfBase)
+			if valField.CanSet() {
+				ptr := valField.Addr().Interface()
 
-					c.parseFlags(ptr)
-				}
+				c.parseFlags(ptr)
 			}
 		}
 	}
