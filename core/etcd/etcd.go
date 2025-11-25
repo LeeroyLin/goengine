@@ -139,7 +139,16 @@ func (e *ETCD) doClose() {
 	defer e.Unlock()
 
 	if e.client != nil {
-		err := e.client.Close()
+		// 取消租约
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		_, err := e.client.Revoke(ctx, e.leaseId)
+		cancel()
+		if err != nil {
+			elog.Fatal("[ETCD] revoke lease failed. err:", err)
+		}
+
+		// 关闭客户端
+		err = e.client.Close()
 		if err != nil {
 			elog.Fatal("[ETCD] close failed. err:", err)
 			return
@@ -190,13 +199,6 @@ func (e *ETCD) startKeepAlive() {
 	for {
 		select {
 		case <-e.closeChan:
-			// 取消租约
-			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-			_, err := e.client.Revoke(ctx, e.leaseId)
-			cancel()
-			if err != nil {
-				elog.Fatal("[ETCD] revoke lease failed. err:", err)
-			}
 			return
 		case <-ticker.C:
 			// 续租
