@@ -56,7 +56,7 @@ func (rpc *RPC) serveOne(url string, s *grpc.Server) {
 			return
 		}
 
-		elog.Error("[RPC] start serve.", url)
+		elog.Info("[RPC] start serve.", url)
 
 		err = s.Serve(listen)
 
