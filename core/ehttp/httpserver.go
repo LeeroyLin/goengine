@@ -256,9 +256,9 @@ func corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Credentials", "true") // 允许携带 Cookie（按需开启）
 
 		// 设置允许的请求头（需包含 Cocos 前端可能传递的头，如 Content-Type）
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Token")
 		// 设置允许的请求方法（覆盖 Cocos 可能用到的 POST/GET）
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "PUT, DELETE, GET, POST, OPTIONS")
 		// 预检请求缓存时间（86400 秒 = 24 小时，减少重复预检）
 		w.Header().Set("Access-Control-Max-Age", "86400")
 
