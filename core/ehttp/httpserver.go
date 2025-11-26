@@ -248,7 +248,11 @@ func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		elog.Info("[CORS] method", r.Method)
 
-		w.Header().Set("Access-Control-Allow-Origin", "*")         // 允许当前合法域名
+		// 获取前端请求的 Origin 头
+		origin := r.Header.Get("Origin")
+		elog.Info("[CORS] origin", origin)
+
+		w.Header().Set("Access-Control-Allow-Origin", origin)      // 允许当前合法域名
 		w.Header().Set("Access-Control-Allow-Credentials", "true") // 允许携带 Cookie（按需开启）
 
 		// 设置允许的请求头（需包含 Cocos 前端可能传递的头，如 Content-Type）
@@ -263,10 +267,6 @@ func corsMiddleware(next http.Handler) http.Handler {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-
-		// 获取前端请求的 Origin 头
-		origin := r.Header.Get("Origin")
-		elog.Info("[CORS] origin", origin)
 
 		// 传递请求到下一个处理函数（接口逻辑）
 		next.ServeHTTP(w, r)
