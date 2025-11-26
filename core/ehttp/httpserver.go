@@ -248,13 +248,16 @@ func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		elog.Info("[CORS] method", r.Method)
 
+		w.Header().Set("Access-Control-Allow-Origin", "*")         // 允许当前合法域名
+		w.Header().Set("Access-Control-Allow-Credentials", "true") // 允许携带 Cookie（按需开启）
+
 		// 设置允许的请求头（需包含 Cocos 前端可能传递的头，如 Content-Type）
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		// 设置允许的请求方法（覆盖 Cocos 可能用到的 POST/GET）
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		// 预检请求缓存时间（86400 秒 = 24 小时，减少重复预检）
 		w.Header().Set("Access-Control-Max-Age", "86400")
-		
+
 		// 处理预检请求（OPTIONS）：浏览器跨域前会先发 OPTIONS 请求校验
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
@@ -264,8 +267,6 @@ func corsMiddleware(next http.Handler) http.Handler {
 		// 获取前端请求的 Origin 头
 		origin := r.Header.Get("Origin")
 		elog.Info("[CORS] origin", origin)
-		w.Header().Set("Access-Control-Allow-Origin", origin)      // 允许当前合法域名
-		w.Header().Set("Access-Control-Allow-Credentials", "true") // 允许携带 Cookie（按需开启）
 
 		// 传递请求到下一个处理函数（接口逻辑）
 		next.ServeHTTP(w, r)
