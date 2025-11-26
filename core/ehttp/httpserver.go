@@ -246,7 +246,9 @@ func HandleCustomFunc(s *HttpServer, pattern string, handler func(http.ResponseW
 // CORS 中间件：添加跨域响应头
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// 2.1 处理预检请求（OPTIONS）：浏览器跨域前会先发 OPTIONS 请求校验
+		elog.Info("[CORS] method", r.Method)
+
+		// 处理预检请求（OPTIONS）：浏览器跨域前会先发 OPTIONS 请求校验
 		if r.Method == http.MethodOptions {
 			// 设置允许的请求头（需包含 Cocos 前端可能传递的头，如 Content-Type）
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -258,9 +260,9 @@ func corsMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// 2.2 处理正常请求（GET/POST 等）
 		// 获取前端请求的 Origin 头
 		origin := r.Header.Get("Origin")
+		elog.Info("[CORS] origin", origin)
 		w.Header().Set("Access-Control-Allow-Origin", origin)      // 允许当前合法域名
 		w.Header().Set("Access-Control-Allow-Credentials", "true") // 允许携带 Cookie（按需开启）
 
