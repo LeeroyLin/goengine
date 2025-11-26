@@ -248,14 +248,15 @@ func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		elog.Info("[CORS] method", r.Method)
 
+		// 设置允许的请求头（需包含 Cocos 前端可能传递的头，如 Content-Type）
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		// 设置允许的请求方法（覆盖 Cocos 可能用到的 POST/GET）
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		// 预检请求缓存时间（86400 秒 = 24 小时，减少重复预检）
+		w.Header().Set("Access-Control-Max-Age", "86400")
+		
 		// 处理预检请求（OPTIONS）：浏览器跨域前会先发 OPTIONS 请求校验
 		if r.Method == http.MethodOptions {
-			// 设置允许的请求头（需包含 Cocos 前端可能传递的头，如 Content-Type）
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-			// 设置允许的请求方法（覆盖 Cocos 可能用到的 POST/GET）
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-			// 预检请求缓存时间（86400 秒 = 24 小时，减少重复预检）
-			w.Header().Set("Access-Control-Max-Age", "86400")
 			w.WriteHeader(http.StatusOK)
 			return
 		}
