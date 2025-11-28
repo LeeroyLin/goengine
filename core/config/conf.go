@@ -79,7 +79,7 @@ func NewConfETCDPattern() ConfETCDPattern {
 }
 
 // Setup 装载配置
-func (c *ConfBase) Setup(child interface{}, confFilePath string) {
+func (c *ConfBase) Setup(child interface{}, confFilePath string, argsStartIdx int) {
 	// 加载配置文件
 	c.LoadFromFile(child, confFilePath)
 
@@ -90,7 +90,7 @@ func (c *ConfBase) Setup(child interface{}, confFilePath string) {
 	c.initTestFlags()
 
 	// 读取命令行参数
-	cliArgs := os.Args[1:]
+	cliArgs := os.Args[argsStartIdx:]
 	err := c.Flags.Parse(cliArgs)
 	if err != nil {
 		panic(err)
