@@ -16,7 +16,7 @@ func NewShortSnowflake() *ShortSnowflake {
 	return &ShortSnowflake{}
 }
 
-func (s *ShortSnowflake) Generate() float64 {
+func (s *ShortSnowflake) Generate() int64 {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -47,5 +47,5 @@ func (s *ShortSnowflake) Generate() float64 {
 	s.timestamp = now
 
 	// 组合ID：时间戳(42位) + 序列号(11位)
-	return float64((now << 11) | s.sequence)
+	return (now << 11) | s.sequence
 }
