@@ -182,6 +182,10 @@ func (e *ETCD) createLease() {
 
 			if e.connCb != nil {
 				e.connCb()
+
+				e.Lock()
+				e.connCb = nil
+				e.Unlock()
 			}
 
 			// 开始续租
