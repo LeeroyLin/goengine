@@ -73,6 +73,12 @@ func (m *Module) DoRun() error {
 	return m.life.OnRun()
 }
 
+func (m *Module) DoBeforeStop() error {
+	err := m.life.OnBeforeStop()
+
+	return err
+}
+
 func (m *Module) DoStop() error {
 	err := m.life.OnStop()
 

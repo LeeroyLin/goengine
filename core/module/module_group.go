@@ -59,6 +59,21 @@ func (g *ModuleGroup) RunModules() {
 	g.wg.Wait()
 }
 
+func (g *ModuleGroup) BeforeStopModules() {
+	for _, m := range g.modules {
+		g.wg.Add(1)
+		go func() {
+			err := m.DoBeforeStop()
+			g.wg.Done()
+			if err != nil {
+				elog.Error("[App] stop module err: ", m.GetName(), err)
+				return
+			}
+		}()
+	}
+	g.wg.Wait()
+}
+
 func (g *ModuleGroup) StopModules() {
 	for _, m := range g.modules {
 		g.wg.Add(1)

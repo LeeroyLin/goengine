@@ -62,6 +62,11 @@ func (tm *TestModule1) OnRun() error {
 	return nil
 }
 
+func (tm *TestModule1) OnBeforeStop() error {
+	elog.Info("[Test] TestModule1 OnBeforeStop")
+	return nil
+}
+
 func (tm *TestModule1) OnStop() error {
 	elog.Info("[Test] TestModule1 OnStop")
 	return nil
@@ -86,6 +91,11 @@ func (tm *TestModule2) OnInit() {
 
 func (tm *TestModule2) OnRun() error {
 	elog.Info("[Test] TestModule2 OnRun")
+	return nil
+}
+
+func (tm *TestModule2) OnBeforeStop() error {
+	elog.Info("[Test] TestModule1 OnBeforeStop")
 	return nil
 }
 

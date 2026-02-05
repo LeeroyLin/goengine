@@ -8,4 +8,5 @@ type IModule interface {
 	DoInit(dispatcher IDispatcher, rpcGetter IRPCGetter, etcdGetter IETCDGetter, msgChanCapacity int, closeChan chan interface{})
 	DoRun() error
 	DoStop() error
+	DoBeforeStop() error
 }

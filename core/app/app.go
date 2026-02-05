@@ -120,6 +120,13 @@ func (a *App) doStop() {
 		a.AppHandler.OnBeforeStop()
 	}
 
+	// 停止前处理
+	a.middleModuleGroup.BeforeStopModules()
+
+	if a.preModuleGroup != nil {
+		a.preModuleGroup.BeforeStopModules()
+	}
+
 	go func() {
 		// 停止模块
 		a.middleModuleGroup.StopModules()
