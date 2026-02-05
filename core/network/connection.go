@@ -171,7 +171,7 @@ func (c *Connection) RemoteAddr() net.Addr {
 }
 
 // SendMsg 发送数据给客户端
-func (c *Connection) SendMsg(msgId uint32, data []byte) error {
+func (c *Connection) SendMsg(msgId, serialId uint32, errCode uint16, data []byte) error {
 	c.RLock()
 	defer c.RUnlock()
 
@@ -181,7 +181,7 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 
 	// 封包
 	dp := c.Server.GetDataPack()
-	msg, err := dp.Pack(NewMsgPackage(msgId, data))
+	msg, err := dp.Pack(NewMsgPackage(msgId, serialId, errCode, data))
 	if err != nil {
 		elog.Error("[Conn] pack msg err:", err)
 		return err
@@ -197,7 +197,7 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 }
 
 // SendBuffMsg 发送数据到客户端（带缓冲）
-func (c *Connection) SendBuffMsg(msgId uint32, data []byte) error {
+func (c *Connection) SendBuffMsg(msgId, serialId uint32, errCode uint16, data []byte) error {
 	c.RLock()
 	defer c.RUnlock()
 
@@ -215,7 +215,7 @@ func (c *Connection) SendBuffMsg(msgId uint32, data []byte) error {
 
 	// 封包
 	dp := c.Server.GetDataPack()
-	msg, err := dp.Pack(NewMsgPackage(msgId, data))
+	msg, err := dp.Pack(NewMsgPackage(msgId, serialId, errCode, data))
 	if err != nil {
 		elog.Error("[Conn] pack msg err:", err)
 		return err

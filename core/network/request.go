@@ -24,6 +24,16 @@ func (r *Request) GetMsgId() uint32 {
 	return r.msg.GetMsgId()
 }
 
+// GetSerialId 获取请求消息的序号id
+func (r *Request) GetSerialId() uint32 {
+	return r.msg.GetSerialId()
+}
+
+// GetErrCode 获取请求消息的错误码
+func (r *Request) GetErrCode() uint16 {
+	return r.msg.GetErrCode()
+}
+
 // NewRequest 新建Request结构
 func NewRequest(conn inetwork.IConnection, msg inetwork.IMessage) inetwork.IRequest {
 	r := &Request{

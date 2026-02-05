@@ -25,6 +25,16 @@ func (r *WSRequest) GetMsgId() uint32 {
 	return r.msg.GetMsgId()
 }
 
+// GetSerialId 获取请求消息的序号id
+func (r *WSRequest) GetSerialId() uint32 {
+	return r.msg.GetSerialId()
+}
+
+// GetErrCode 获取请求消息的错误码
+func (r *WSRequest) GetErrCode() uint16 {
+	return r.msg.GetErrCode()
+}
+
 // NewWSRequest 新建Request结构
 func NewWSRequest(conn iwebsocket.IWSConnection, msg inetwork.IMessage) iwebsocket.IWSRequest {
 	r := &WSRequest{

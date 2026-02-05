@@ -16,9 +16,9 @@ type IConnection interface {
 	// RemoteAddr 获取远程客户端地址信息
 	RemoteAddr() net.Addr
 	// SendMsg 发送数据给客户端
-	SendMsg(msgId uint32, data []byte) error
+	SendMsg(msgId, serialId uint32, errCode uint16, data []byte) error
 	// SendBuffMsg 发送数据给客户端（带缓冲）
-	SendBuffMsg(msgId uint32, data []byte) error
+	SendBuffMsg(msgId, serialId uint32, errCode uint16, data []byte) error
 	// GetProperty 获取属性
 	GetProperty(name string) (interface{}, error)
 	// SetProperty 设置属性
