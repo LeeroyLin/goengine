@@ -6,6 +6,7 @@ import (
 	"github.com/LeeroyLin/goengine/core/elog"
 	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
+	"io"
 	"strings"
 )
 
@@ -103,7 +104,7 @@ func (c *Cmd) listen(rl *readline.Instance) {
 		input, err := rl.Readline()
 		if err != nil {
 			// 若输入 EOF（Ctrl+D）或其他错误，终止循环
-			if errors.Is(err, readline.ErrInterrupt) {
+			if errors.Is(err, readline.ErrInterrupt) || errors.Is(err, io.EOF) {
 				elog.Info("[Cmd] exit")
 				break
 			}
