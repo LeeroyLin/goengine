@@ -50,7 +50,7 @@ var levels = []string{
 
 type Logger struct {
 	// 确保多协程读写文件，防止文件内容混乱，做到协程安全
-	mu sync.Mutex
+	mu sync.RWMutex
 	// 每行log日志的前缀字符串,拥有日志标记
 	prefix string
 	// 日志标记位
@@ -61,6 +61,14 @@ type Logger struct {
 	buf bytes.Buffer
 	// 当前日志绑定的输出文件
 	file *os.File
+	// 是否要输出到文件
+	isOutputFile bool
+	// 日志文件目录
+	fileDir string
+	// 日志文件名前缀
+	fileNamePrefix string
+	// 当前日志文件，年内日数（用于判断是否是同一天）
+	fileYearDay int
 	// 是否打印调试debug信息
 	debug bool
 	// 获取日志文件名和代码上述的runtime.Call 的函数调用层数
@@ -102,6 +110,9 @@ func (log *Logger) OutPut(level int, s string) error {
 	now := time.Now() // 获取当前时间
 	var file string   // 当前调用日志接口的文件名
 	var line int      // 当前代码行号
+
+	// 准备文件
+	log.readyFile(now)
 
 	log.mu.Lock()
 	defer log.mu.Unlock()
@@ -226,8 +237,75 @@ func (log *Logger) SetPrefix(prefix string) {
 	log.prefix = prefix
 }
 
-func (log *Logger) SetLogFile(fileDir, fileName string) {
-	var file *os.File
+// 准备文件
+func (log *Logger) readyFile(utcNow time.Time) {
+	log.mu.RLock()
+	isOutputFile := log.isOutputFile
+	log.mu.RUnlock()
+
+	// 要输出到文件
+	if isOutputFile {
+		log.mu.RLock()
+		fileDir := log.fileDir
+		fileNamePrefix := log.fileNamePrefix
+		fileYearDay := log.fileYearDay
+		log.mu.RUnlock()
+
+		// 是否是同一天
+		sameDay := utcNow.Local().YearDay() == fileYearDay
+
+		log.mu.Lock()
+		defer log.mu.Unlock()
+
+		// 当前有文件
+		if log.file != nil {
+			// 当前是同一天
+			if sameDay {
+				return
+			}
+
+			// 关闭当前文件
+			log.closeFile()
+		}
+
+		var file *os.File
+
+		var err error
+
+		// 获得日期字符串
+		dateStr := utcNow.Local().Format("2006-01-02")
+
+		// 获得全路径
+		fullPath := fmt.Sprintf("%s/%s_%s.log", fileDir, fileNamePrefix, dateStr)
+
+		if checkFileExist(fullPath) {
+			file, err = os.OpenFile(fullPath, os.O_APPEND|os.O_RDWR, 0644)
+			absPath, _ := filepath.Abs(fullPath)
+			fmt.Println("open", absPath)
+		} else {
+			file, err = os.OpenFile(fullPath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
+			fmt.Println("create")
+		}
+
+		if err != nil {
+			fmt.Printf("open log file error: %v\n", err)
+			log.out = os.Stdout
+			return
+		}
+
+		log.file = file
+		log.out = file
+		log.fileYearDay = utcNow.Local().YearDay()
+	}
+}
+
+func (log *Logger) SetLogFile(fileDir, fileNamePrefix string) {
+	log.mu.Lock()
+	defer log.mu.Unlock()
+
+	log.isOutputFile = true
+	log.fileDir = fileDir
+	log.fileNamePrefix = fileNamePrefix
 
 	// 创建目录
 	err := mkdirLog(fileDir)
@@ -236,28 +314,6 @@ func (log *Logger) SetLogFile(fileDir, fileName string) {
 		fmt.Printf("mkdir log dir error: %v\n", err)
 		return
 	}
-
-	fullPath := fileDir + "/" + fileName
-	if checkFileExist(fullPath) {
-		file, err = os.OpenFile(fullPath, os.O_APPEND|os.O_RDWR, 0644)
-		absPath, _ := filepath.Abs(fullPath)
-		fmt.Println("open", absPath)
-	} else {
-		file, err = os.OpenFile(fullPath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
-		fmt.Println("create")
-	}
-
-	if err != nil {
-		fmt.Printf("open log file error: %v\n", err)
-		return
-	}
-
-	log.mu.Lock()
-	defer log.mu.Unlock()
-
-	// 关闭之前绑定的文件
-	log.file = file
-	log.out = file
 }
 
 func (log *Logger) CloseDebug() {
@@ -271,11 +327,12 @@ func (log *Logger) OpenDebug() {
 func (log *Logger) closeFile() {
 	if log.file != nil {
 		err := log.file.Close()
+		log.out = os.Stderr
+		log.file = nil
+		log.fileYearDay = 0
 		if err != nil {
 			fmt.Printf("close log file error: %v\n", err)
 		}
-		log.file = nil
-		log.out = os.Stderr
 	}
 }
 

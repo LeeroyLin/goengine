@@ -12,19 +12,19 @@ func TestStdLog(t *testing.T) {
 	Debugf("debug a = %d\n", 123)
 
 	SetLogFlags(BitDate | BitLongFile | BitLevel)
-	Info("zinx info content")
+	Info("log info content")
 
 	//设置日志前缀，主要标记当前日志模块
 	SetPrefix("MODULE")
-	Error("zinx error content")
+	Error("log error content")
 
 	AddLogFlag(BitShortFile | BitTime)
-	Stack("zinx stack")
+	Stack("log stack")
 
-	SetLogFile("./log", "zinx.log")
-	Debug("===> zinx debug content ~~666")
-	Debug("===> zinx debug content ~~888")
-	Error("===> zinx Error!!!! ~~~555~~~")
+	SetLogFile("./log", "test1")
+	Debug("===> log debug content ~~666")
+	Debug("===> log debug content ~~888")
+	Error("===> log Error!!!! ~~~555~~~")
 
 	CloseDebug()
 	Debug("===> should not show!!!")
