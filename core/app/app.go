@@ -87,7 +87,9 @@ func (a *App) Run(successCb func(), finalCb func()) {
 
 	go func() {
 		// 运行模块
-		a.middleModuleGroup.RunModules()
+		if a.middleModuleGroup != nil {
+			a.middleModuleGroup.RunModules()
+		}
 
 		a.RPC.StartServe()
 
@@ -102,7 +104,9 @@ func (a *App) Run(successCb func(), finalCb func()) {
 		}
 
 		// 运行后置模块
-		a.lateModuleGroup.RunModules()
+		if a.lateModuleGroup != nil {
+			a.lateModuleGroup.RunModules()
+		}
 
 		select {
 		case <-a.closer.CloseChan:
@@ -132,8 +136,13 @@ func (a *App) doStop() {
 	}
 
 	// 停止前处理
-	a.lateModuleGroup.BeforeStopModules()
-	a.middleModuleGroup.BeforeStopModules()
+	if a.lateModuleGroup != nil {
+		a.lateModuleGroup.BeforeStopModules()
+	}
+
+	if a.preModuleGroup != nil {
+		a.middleModuleGroup.BeforeStopModules()
+	}
 
 	if a.preModuleGroup != nil {
 		a.preModuleGroup.BeforeStopModules()
@@ -141,8 +150,13 @@ func (a *App) doStop() {
 
 	go func() {
 		// 停止模块
-		a.lateModuleGroup.StopModules()
-		a.middleModuleGroup.StopModules()
+		if a.preModuleGroup != nil {
+			a.lateModuleGroup.StopModules()
+		}
+
+		if a.preModuleGroup != nil {
+			a.middleModuleGroup.StopModules()
+		}
 
 		if a.preModuleGroup != nil {
 			a.preModuleGroup.StopModules()
@@ -161,14 +175,24 @@ func (a *App) doStop() {
 
 // 获得模块
 func (a *App) getModule(module string) (iface.IModule, error) {
-	m, ok := a.middleModuleGroup.GetModule(module)
+	if a.middleModuleGroup != nil {
+		m, ok := a.middleModuleGroup.GetModule(module)
 
-	if ok {
-		return m, nil
+		if ok {
+			return m, nil
+		}
 	}
 
 	if a.preModuleGroup != nil {
-		m, ok = a.preModuleGroup.GetModule(module)
+		m, ok := a.preModuleGroup.GetModule(module)
+
+		if ok {
+			return m, nil
+		}
+	}
+
+	if a.lateModuleGroup != nil {
+		m, ok := a.lateModuleGroup.GetModule(module)
 
 		if ok {
 			return m, nil
