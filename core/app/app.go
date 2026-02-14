@@ -18,6 +18,7 @@ type App struct {
 	Desc              string
 	preModuleGroup    *module.ModuleGroup
 	middleModuleGroup *module.ModuleGroup
+	lateModuleGroup   *module.ModuleGroup
 	AppHandler        iface.IAppHandler
 	msgChanCapacity   int // 模块间消息通道容量
 	closer            *closer.SigCloser
@@ -40,7 +41,7 @@ func NewApp(name, desc string) *App {
 	return a
 }
 
-func (a *App) Init(preModules, modules []iface.IModule) {
+func (a *App) Init(preModules, modules, lateModules []iface.IModule) {
 	elog.Info("[App] Init.", a.Name)
 
 	if a.AppHandler != nil {
@@ -59,6 +60,13 @@ func (a *App) Init(preModules, modules []iface.IModule) {
 
 		// 添加并初始化模块
 		a.middleModuleGroup.InitModules(modules)
+	}
+
+	if lateModules != nil && len(lateModules) > 0 {
+		a.lateModuleGroup = module.NewModuleGroup(a, a, a, a.msgChanCapacity, a.closer.CloseChan)
+
+		// 添加并初始化模块
+		a.lateModuleGroup.InitModules(lateModules)
 	}
 
 	if a.AppHandler != nil {
@@ -93,6 +101,9 @@ func (a *App) Run(successCb func(), finalCb func()) {
 			successCb()
 		}
 
+		// 运行后置模块
+		a.lateModuleGroup.RunModules()
+
 		select {
 		case <-a.closer.CloseChan:
 			a.doStop()
@@ -121,6 +132,7 @@ func (a *App) doStop() {
 	}
 
 	// 停止前处理
+	a.lateModuleGroup.BeforeStopModules()
 	a.middleModuleGroup.BeforeStopModules()
 
 	if a.preModuleGroup != nil {
@@ -129,6 +141,7 @@ func (a *App) doStop() {
 
 	go func() {
 		// 停止模块
+		a.lateModuleGroup.StopModules()
 		a.middleModuleGroup.StopModules()
 
 		if a.preModuleGroup != nil {

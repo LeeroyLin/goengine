@@ -140,7 +140,7 @@ func TestApp(t *testing.T) {
 	a.Init([]iface.IModule{}, []iface.IModule{
 		NewTestModule1(),
 		NewTestModule2(),
-	})
+	}, []iface.IModule{})
 
 	a.Run(func() {
 		a.Call("module1", &TestCommReq{
@@ -160,7 +160,7 @@ func TestApp(t *testing.T) {
 		a.Cast("module1", &TestCommReq{
 			CommId: 33,
 		})
-	})
+	}, func() {})
 
 	time.Sleep(1 * time.Second)
 	a.Stop()

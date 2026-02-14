@@ -2,7 +2,7 @@ package iface
 
 type IApp interface {
 	// Init 初始化
-	Init(preModules, modules []IModule)
+	Init(preModules, modules, lateModules []IModule)
 
 	// Run 运行应用
 	//
