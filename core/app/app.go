@@ -140,7 +140,7 @@ func (a *App) doStop() {
 		a.lateModuleGroup.BeforeStopModules()
 	}
 
-	if a.preModuleGroup != nil {
+	if a.middleModuleGroup != nil {
 		a.middleModuleGroup.BeforeStopModules()
 	}
 
@@ -150,11 +150,11 @@ func (a *App) doStop() {
 
 	go func() {
 		// 停止模块
-		if a.preModuleGroup != nil {
+		if a.lateModuleGroup != nil {
 			a.lateModuleGroup.StopModules()
 		}
 
-		if a.preModuleGroup != nil {
+		if a.middleModuleGroup != nil {
 			a.middleModuleGroup.StopModules()
 		}
 
